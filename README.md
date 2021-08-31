@@ -101,7 +101,7 @@ THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  OR IMPLIED,
 
 Before reading this section, the reader must have the basic idea of object-oriented programming (OOP). This section uses the standard OOP terms to ensure effective explanation. Of course, thanks to the simplicity of the method implemented in PyNUCTRAN. Consequently, the library consists of a small number of classes and structures. You will discover that the library only has 600++ lines of Python code, which is a lot less than the state-of-the-art Monte Carlo transport codes. Also, identifiers are stylized using the CamelNotation, just like most Microsoft-oriented codes. It improves the code readability without any fancy underscores. However, some identifiers do not use camel notation, especially those for temporary data storage.
 
-The library consists of four (4) classes and one (1) enumerations.
+The library consists of four (4) classes and one (1) enumeration.
 ```
 Classes: Physics, Isotope, Removal, Nuclide
 Enums: RemovalType
