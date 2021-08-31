@@ -2,10 +2,10 @@
 Python Library for Stochastic Nuclear Transmutation Solver (PYNUCTRAN)
 
 Initially developed, designed and proposed by Dr M. R. Omar for the purpose of simulating various
-nuclear transmutations such as decays, fissions as well as neutron absorptions. PYNUCTRAN was
-initially developed to avoid cumbersome numerical issues of solving the nuclide depletion 
-equations. To date, there are many numerical depletion solvers available such as CRAM, TTM etc. 
-Interestingly, the designed stochastic solver is much more easier to code, but it consumes 
+nuclear  transmutations such as  decays,  fissions as well as neutron absorptions. PYNUCTRAN  was
+initially  developed  to  avoid cumbersome  numerical issue  of  solving  the  nuclide  depletion 
+equations. To date, there  are many numerical  depletion  solvers available such as CRAM, TTM etc. 
+Interestingly,  the  designed  stochastic  solver is  much more easier to code,  but it  consumes 
 computational power. Future research involves parallelizing PYNUCTRAN to reduce CPU time.
 
 
@@ -142,7 +142,7 @@ class Removal:
 
 
     def AddDaughters(self, Yield: float, NuclideIdA: str, NuclideIdB: str):
-        # Checks whether there any daughter pair duplicates.
+        # Checks whether there exists any daughter pair duplicates.
         for nuclide in self.Daughters:
             if NuclideIdA == nuclide[1] or NuclideIdB == nuclide[2]:
                 printf('Duplicate nuclides detected. ' + str(nuclide), mode=PrintMode.Error)
@@ -175,7 +175,7 @@ class Removal:
 
 '''
     CLASS       Isotope (Structure)
-    PURPOSE     Isotope is a data structure that stores various information of an isotope.
+    PURPOSE     Isotope is a  data  structure  that store s various  information of an isotope.
     MEMBERS     __init__()      Class constructor.
                 AddRemoval()    Add a removal method to the isotope.
 
@@ -202,15 +202,15 @@ class Isotope:
 
     
 '''
-    CLASS       Nuclide (Structure)
-    PURPOSE     Nuclide is a data structure that stores various information of a simulated
+    CLASS       Nuclide (Structure) 
+    PURPOSE     Nuclide  is  a  data  structure  that  stores various information of a simulated
                 nuclide.
     MEMBERS     __init__()      Class constructor.
 
                 NId (int)       An integer identifier distinguishing between different nuclides.
                                 This integer is auto-generated.
                 Isotope         The isotope species of the nuclide.
-                CreationStep    The time step in which the nuclide is created in the computer 
+                CreationStep    The time step in  which the nuclide is  created in  the computer 
                                 memory.
                 
 
@@ -692,50 +692,3 @@ class Physics:
             plt.ylabel('Isotope Count')
         plt.xlabel('Time Step')
         plt.show()
-
-
-
-
-Pb211 = Isotope('Pb211', 'Plumbum-211', 82, 211)
-Pb211_HL = 2.1660E3
-lambda1_Pb211 = np.log(2.0) / Pb211_HL
-Pb211_RM1 = Removal('Decay', lambda1_Pb211, RemovalType.Decay)
-Pb211_RM1.AddDaughters(100.0, 'Bi211', '')
-Pb211.AddRemoval(Pb211_RM1)
-
-Bi211 = Isotope('Bi211', 'Bismuth-211', 82, 211)
-Bi211_HL = 1.2840E2
-lambda1_Bi211 = np.log(2.0) / Bi211_HL
-Bi211_RM1 = Removal('Decay', lambda1_Bi211, RemovalType.Decay)
-Bi211_RM1.AddDaughters(100.0, 'Tl207', '')
-Bi211.AddRemoval(Bi211_RM1)
-
-Tl207 = Isotope('Tl207', 'Tl-207', 82, 207)
-Tl207_HL = 2.8620E2
-lambda1_Tl207 = np.log(2.0) / Tl207_HL
-Tl207_RM1 = Removal('Decay', lambda1_Tl207, RemovalType.Decay)
-Tl207_RM1.AddDaughters(100.0, 'Pb207', '')
-Tl207.AddRemoval(Tl207_RM1)
-Tl207.AddRemoval(Tl207_RM1)
-
-Pb207 = Isotope('Pb207', 'Lead-207', 82, 207)
-Pb207_HL = np.Infinity
-lambda1_Pb207 = 0.0
-Pb207_RM1 = Removal('Decay', lambda1_Pb207, RemovalType.Decay)
-Pb207_RM1.AddDaughters(100.0, '', '')
-Pb207.AddRemoval(Pb207_RM1)
-
-sim = Physics('Benchmark #4', 10.0, 1000)
-sim.AddIsotope(Pb211)
-sim.AddIsotope(Bi211)
-sim.AddIsotope(Tl207)
-sim.AddIsotope(Pb207)
-sim.GenerateNuclides(Pb211, 1000)
-sim.IsotopesToMonitor = ['Pb211','Bi211','Tl207','Pb207']
-c = {'Pb211': '#32a854', 'Bi211': '#32a854', 'Tl207':'#a8325b'}
-sim.OutputSkip = 10
-sim.DisplayProgressOnly = True
-sim.Run(Seed=920909)
-sim.PlotConcentrations(Range=(0,0), Normalize=True, Color=c)
-
-        
