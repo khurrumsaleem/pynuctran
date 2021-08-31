@@ -1,7 +1,7 @@
 # PyNUCTRAN
 ## A Python Library for Stochastic Nuclear Transmutation Solver.
 
-Initially developed, designed and proposed by M. R. Omar for the purpose of simulating various nuclear transmutations such as decays, fissions as well as neutron absorptions. PyNUCTRAN helps physicists to avoid cumbersome numerical issues of solving the nuclide depletion equations (also known as the Bateman's equations). These issues include the stiffness of the Batemans equations due to complex decay chain. To date, there are many numerical depletion solvers available such as CRAM, TTM etc.  Interestingly, the designed stochastic solver is easier to code, alas, it consumes computational power. Fortunately, thanks to the current computing technology progress, such that the computational resource is not a problem anymore. Future research involves parallelizing PyNUCTRAN to reduce CPU time to further boost the computing speed.
+PyNUCTRAN is a Python library created by M. R. Omar for simulating various nuclear transmutations such as decays, fissions, and neutron absorptions. The code helps physicists avoid cumbersome numerical issues of solving the nuclide depletion equations (also known as the Bateman's equations). These issues include the stiffness of the Batemans equations due to the complex decay chain problems. To date, there are many numerical depletion solvers available such as CRAM, TTM etc.  Interestingly, the proposed stochastic solver is simple to code, but it consumes computational power. Thanks to the current computing technology progress, the computational resource is not a problem anymore. Future research involves parallelizing PyNUCTRAN to reduce CPU time, thus further boosting the computing speed. 
 
 ## Features
 
@@ -14,11 +14,11 @@ If you don't prefer dealing with complicated mathematical methods to solve the B
 
 ## Summary of the Stochastic Transmutation Method
 
-PyNUCTRAN works by creating a massive amount of simulated nuclides in the computer memory. Also, the simulation time is divided into several time steps. At each time step, PyNUCTRAN iterates over each of these simulated nuclides and decides whether each of these nuclides undergoes a removal process or not. The removal process includes the decay, fission and absorptions and any other user-defined removal methods. The term 'removal' is used because if the removal process occurs, it mutates the nuclide species, and the isotope is now transformed (removed) into a new product(s) depending on the removal method. If removal occurs, the nuclide is removed from the simulation and its product(s) will be stored for the iteration during the next time steps.
+PyNUCTRAN works by creating a massive amount of simulated nuclides in the computer memory. Also, the code divides the simulation time into discrete timesteps. In each step, PyNUCTRAN iterates over each of these simulated nuclides. Here, the code decides whether each of these nuclides undergoes a removal process or not. The removal process includes the decay, fission and absorptions and any other user-defined removal methods. As the removal process occurs, it mutates the nuclide species. At this point, the removal event transforms the isotope (removed) into one or more daughter nuclides, depending on the removal method. If removal occurs, the code removes the nuclide from the simulation, and its product(s) will be stored for the iteration during the next timestep.
 
-PyNUCTRAN characterizes nuclides into various isotope species. Each isotope species may consist of a set of removal methods. For example, U-238 disappears from the system via fission or decay. Here, these removal methods occur at a specific rate, λ, per unit second. For a decay, λ is the decay constant. for other removal methods involving neutrons, λ is the reaction rate. The reaction rate is obtained using the neutron flux computed from transport codes, such as MCNP, OpenMC and et cetera.
+PyNUCTRAN characterizes nuclides into various isotope species. Each isotope species may consist of a set of removal methods. For example, U-238 disappears from the system via fission or decay. Here, these removal methods occur at a specific rate, λ, per unit second. For decay events, λ is the well-known decay constant. For other removal methods involving neutrons, λ is the reaction rate. The reaction rate is obtained using the neutron flux computed from transport codes, such as MCNP, OpenMC and et cetera.
 
-During the iteration, PyNUCTRAN selects the most probable event and tests whether the selected removal event occur. Such a selection is made by using a random number ![\small](https://latex.codecogs.com/svg.latex?\small&space;\gamma\in\[0,1\)) and based on the probabilistic approach proposed by M. R. Omar. Suppose that a nuclide of an isotope consists of ```n``` removals, thus the probability of selecting the k-th removal is given by
+During the iteration, PyNUCTRAN selects the most probable event and tests whether the selected removal event occurs. Such a selection utilizes a random number ![\small](https://latex.codecogs.com/svg.latex?\small&space;\gamma\in\[0,1\)), and it applies the probabilistic approach proposed by M. R. Omar. Suppose that a nuclide of an isotope consists of ```n``` removals. Thus the probability of selecting the k-th removal is given by
 
 ![\Medium \bg_black x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\normal&space;p_k\(\Lambda_1,\Lambda_2,...,\Lambda_n\)=\prod_{j=1}^{n}\(\delta_{kj}+\(-1\)^{\delta_{kj}}e^{-\Lambda_j}\)) 
 
@@ -26,7 +26,7 @@ where ![\small](https://latex.codecogs.com/svg.latex?\small&space;\Lambda_k=\lam
 
 ![\Medium \bg_black x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\normal&space;\sum_{j=1}^{k-1}p_j<\gamma\sum_{j=1}^{n}p_j\le\sum_{j=1}^{k}p_j) 
 
-Here, the random selections of the removal methods are based on Poisson statistics, and it assumes a constant λ within the preceding time steps. Once a removal method is selected, then the code will again decide whether the selected removal event is occurring or not. A new random number ![\small](https://latex.codecogs.com/svg.latex?\small&space;\gamma\in\[0,1\)) is sampled and the removal event occurs if the following condition is met:
+Here, the random selections of the removal methods follow the Poisson process, and it assumes a constant λ within the preceding time steps. Once a removal method is selected, then the code will again decide whether the selected removal event is occurring or not. A new random number ![\small](https://latex.codecogs.com/svg.latex?\small&space;\gamma\in\[0,1\)) is sampled and the removal event occurs if the following condition is met:
 
 ![\Large \bg_black x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\normal&space;\gamma>\(1-e^{-\Lambda_k}\)) 
 
@@ -97,12 +97,12 @@ THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  OR IMPLIED,
 
 ## Library Documentation
 
-In order to efficiently acquire the information delivered in this section, the reader is adviced to have the basic idea of object-oriented programming. This section uses the standard OOP terms to ensure effective explanation. Thanks to the simplicity of the method implemented in PyNUCTRAN, the library consists of a small number of classes and structures. You will discover that the library has 600++ lines of codes, which is a lot less than the state-of-the-art Monte Carlo transport codes. Also, identifiers are stylized using the CamelNotation, just like most Microsoft developers codes appearance. However, some identifiers does not use the camel notation, especially those for temporary data storage.
+Before reading this section, the reader must have the basic idea of object-oriented programming (OOP). This section uses the standard OOP terms to ensure effective explanation. Of course, thanks to the simplicity of the method implemented in PyNUCTRAN. Consequently, the library consists of a small number of classes and structures. You will discover that the library only has 600++ lines of Python code, which is a lot less than the state-of-the-art Monte Carlo transport codes. Also, identifiers are stylized using the CamelNotation, just like most Microsoft-oriented codes. It improves the code readability without any fancy underscores. However, some identifiers do not use camel notation, especially those for temporary data storage.
 
-The library consists of four (4) classes and two (2) enumerations.
+The library consists of four (4) classes and one (1) enumerations.
 ```
 Classes: Physics, Isotope, Removal, Nuclide
-Enums: RemovalType, PrintMode
+Enums: RemovalType
 ```
 
 
@@ -118,12 +118,12 @@ RemovalType.NoRemoval = 3
 The purpose of this class is to handles the information of a removal method.
 
 ##### ```Removal.Removal(Id: str, Lambda: float, Type: RemovalType)```
-A class constructor that defines a nuclide removal method. This is actually a data structure that stores removal parameters of a specific removal. For instance, a beta decay of isotope A is a removal method, where the decay removes isotope A from the system by transmutating A into other species. The class constructor takes three (3) parameters ```Id```, ```Lambda``` and ```Type```. ```Id``` is a string identifier of the removal method; ```Lambda``` is the removal rate in per unit second; and ```Type``` is the removal type.
+A class constructor that defines a nuclide removal method. This class is a data structure that stores the parameters of a specific removal. For instance, a beta decay of isotope A is a removal method, where the decay event removes isotope A from the system by mutating A into other species. The class constructor takes three (3) parameters ```Id```, ```Lambda``` and ```Type```. ```Id``` is a string identifier of the removal method; ```Lambda``` is the removal rate (per second); and ```Type``` is the removal type.
 
 ##### ```Removal.AddDaughters(Yield: float, NuclideIdA: str, NuclideIdB: str)```
-Add the products to the removal method. ```Yield``` is the probability (in percent) of producing the daughters pair when the removal event occur; ```NuclideIdA``` is the string identifier of the first product i.e. U238, Pu240...; ```NuclideIdB``` is the string identifier of the second product. Only a pair of isotopes is accepted. For removals that produce only one product, set '' for the second product. If both product Ids are empty string, '', then no product will be created after the removal event. 
+Adds the daughter products to the removal method. ```Yield``` is the probability (in per cent) of producing the daughter pair during the removal event; ```NuclideIdA``` is the string identifier of the first product, i.e. U238, Pu240...; ```NuclideIdB``` is the string identifier of the second product. Only a pair of isotopes is accepted. If the removal produces only one product, set '' for the second product. If both product Ids are empty strings, '', then the code does not create the product after the removal event. 
 ##### ```Removal.SampleDaughters() -> tuples(Isotope, Isotope)```
-Randomly selects one of the daugter pair based on the specified product yield. The method returns a pair of isotopes tuple ```(Isotope,Isotope)``` representing the sampled daughter pair.
+Randomly selects one of the daughter pairs based on the specified product yield. The method returns a pair of isotopes tuple ```(Isotope, Isotope)``` representing the sampled daughter pair.
 #####  ```Removal.Id: str```
 Gets or sets the string identifier of the removal method.
 ##### ```Removal.Lambda: float```
@@ -136,7 +136,7 @@ Stores a Python list containing the daughter pair parameters: ```[[Yield, Nuclid
 ### The ```Isotope``` class
 An ```Isotope``` class is a data structure that stores various information of an isotope species.
 ##### ```Isotope.Isotope(Id: str, Name: str, Z: float, A: float)```
-A class constructor that defines an Isotope. ```Id``` is a string identifier of the isotope, i.e. 'U235','Pu240', and etc. Also, ```Id``` must be short and simple since it will be used later as a reference to the daughter(s) of various removal methods (if any). ```Name``` is a string specifying the full name of the isotope; ```Z``` is a the proton number; and ```A``` is the nucleus number.
+A class constructor that defines an Isotope. ```Id``` is a string identifier of the isotope, i.e. 'U235','Pu240', etc. Also, ```Id``` must be short and simple because it could serve as a reference to the daughter(s) of other removal methods (if any). ```Name``` is a string specifying the full name of the isotope; ```Z``` is the proton number; and ```A``` is the nucleus number.
 ##### ```Isotope.AddRemoval(Method: Removal)```
 Adds a removal method, ```Method```, to the isotope.
 ##### ```Isotope.Id: str```
@@ -152,9 +152,9 @@ A list of removal methods experienced by the isotope.
 
 ### The ```Nuclide``` class
 ##### ```Nuclide.Nuclide(NIsotope: Isotope, CreationStep: int)```
-A class constructor that creates a nuclide of species ```NIsotope```. ```CreationStep``` is an integer specifying the time step it is being created. ```CreationStep``` enables the computation of the average isotope life time in the simulation.
+A class constructor that creates a nuclide of species ```NIsotope```. ```CreationStep``` is an integer specifying the time step where it is created. ```CreationStep``` enables the computation of the average isotope lifetime in the simulation.
 ##### ```Nuclide.NId: int```
-Gets the integer identification number. This number is automatically generated during nuclide's creation.
+Gets the identification number. This number is automatically generated during nuclide's creation.
 ##### ```Nuclide.Isotope: Isotope```
 Gets or sets the isotope species of the nuclide.
 ##### ```Nuclide.CreationStep: int```
@@ -163,7 +163,7 @@ Gets or sets the time step it was created.
 ### The ```Physics``` class
 Handles the necessary routines that helps to simulate the transmutation processes.
 ##### ```Physics.Physics(Id: str, TimeInterval: float, Steps: int)```
-A class constructor that defines a new simulation. ```Id``` is a string identifier of the simulation; ```TimeInterval``` is the real time interval between time successive time steps; and ```Steps``` is the total number of time steps to simulate.
+A class constructor that defines a new simulation. ```Id``` is a string identifier of the simulation; ```TimeInterval``` is the simulation time interval (in seconds) between time successive time steps; and ```Steps``` is the total number of time steps to simulate.
 ##### ```Physics.AddIsotope(NewIsotope: Isotope)```
 Adds a new isotope, ```NewIsotope: Isotope```, to the simulation.
 ##### ```Physics.GenerateIsotopes(NuclideIsotope: Isotope, Count: int)```
@@ -173,15 +173,15 @@ Samples a nuclide removal method (Also selects the NoRemoval event).```SelectedI
 ##### ```Physics.DoesRemovalHappens(rm: Removal) -> bool```
 Decides whether a removal process occurs. ```rm``` is the removal of the nuclide species. Returns ```True``` if the removal occurs, ```False``` otherwise.
 ##### ```Physics.ProcessRemoval(Type: RemovalType, NuclideToProcess: Nuclide)```
-Processes a removal event, i.e. kills the removed nuclide, and add new nuclides in the source table. ```RemovalType``` is the type of the undergoing removal; ```NuclideToProcess``` is the nuclide subjected to the removal event.
+Processes a removal event, i.e. kills the removed nuclide and add new nuclides in the source table. ```RemovalType``` is the type of the undergoing removal; ```NuclideToProcess``` is the nuclide subjected to the removal event.
 ##### ```Physics.UpdateStep()```
-Updates the current time steps, processes the source table shift.
+Updates the current time step and processes the source table shift.
 ##### ```Physics.IterateOverNuclides(self, CurrentStep: int)```
-A subroutine containing the loop that iterates over the entire source nuclides table. During each time step, the nuclide source table contains the nuclides that are waiting for their fate: to be removed from the system, or not. Therefore, PyNUCTRAN iterates over these nuclides, to decide and simulate their removal fate. ```CurrentStep``` is an integer specifying the instantaneous time step.
+A subroutine containing the loop that iterates over the entire source nuclides table. During each time step, the nuclide source table contains the nuclides that are waiting for their fate. Here, the fate is either to be removed from the system or not. Therefore, PyNUCTRAN iterates over these nuclides to decide and simulate their removal fate. ```CurrentStep``` is an integer specifying the current time step.
 ##### ```Physics.Run(Seed: int = 0)```
-Begin executing the simulation from ```timestep = 0``` to ```Steps```. ```Seed``` is the seed number of Python's pseudo-random number generator (PRNG). Use the same seed number if you need to maintain the reproduce the same result.
+Begins executing the simulation from ```timestep = 0``` to ```Steps```. ```Seed``` is the seed number of Python's pseudo-random number generator (PRNG). Use the same seed number if you need to maintain the reproduce the same result.
 ##### ```Physics.PlotConcentrations(self, Ids: list = [], Range: tuple = (0, 0), Normalize: bool = False, Color: dict = {})```
-Plots the concentration curves over time steps. ```Ids``` is the list of isotope identification strings, specifying which isotope concentration to include in the plot; ```Range``` is the time step range. The default is from 0 to the specified maximum steps. ```Normalize``` is a boolean specifying whether the concentrations should be normalized or not. A normalized concentration is equals to [the nuclide count] / [total initial nuclides]. ```Color```: A python dictionary specifying the curve colors that differentiate the isotopes. The key of the dictionary is equivalent to the isotope Id defined in the simulation. See ```Isotope.Id```.
+Plots the concentration curves over time steps. ```Ids``` is the list of isotope identification strings, specifying which isotope concentration to include in the plot; ```Range``` is the time step range. The default is from 0 to the specified maximum steps. ```Normalize``` is a boolean specifying whether the concentrations should be normalized or not. A normalized concentration is equals to [the nuclide count] / [total initial nuclides]. ```Color```: A python dictionary specifying the curve colours that differentiate the isotopes. The key of the dictionary is equivalent to the isotope Id defined in the simulation. See ```Isotope.Id```.
 ##### ```Physics.Isotopes: dict(Isotopes)```   
 A list of isotopes defined in the simulation.
 ##### ```Physics.NuclidesTable: dict```
@@ -201,7 +201,7 @@ A list of  isotope  identifications  specifying the isotopes should be tallied  
 ##### ```Physics.OutputSkip: int```
 The number of steps  skipped  for console printing. Note: The ```Physics.DisplayProgressOnly``` property  must be set to ```False```.
 ##### ```Physics.IsotopeConcentrations: dict```
-A dictionary containing the  concentrations of  all isotopes over the entire simulated  time steps. The keys of the dictionary is equivalent to the isotope Id  defined  in  the  simulation. The  rows  of the dictionary corresponds to the time step.
+A dictionary containing the concentrations of all isotopes over the entire simulated time steps. The keys of the dictionary are equivalent to the isotope Id defined in the simulation. The rows of the dictionary correspond to the time step.
   ```                                          
    [Isotope1]  [Isotope2]  [Isotope3] ...
    c1-1        c2-1        c3-1
