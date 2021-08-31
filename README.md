@@ -1,4 +1,4 @@
-# PYNUCTRAN
+# PyNUCTRAN
 ## A Python Library for Stochastic Nuclear Transmutation Solver.
 #
 #
