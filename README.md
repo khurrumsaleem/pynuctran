@@ -1,7 +1,5 @@
 # PyNUCTRAN
 ## A Python Library for Stochastic Nuclear Transmutation Solver.
-#
-#
 
 Initially developed, designed and proposed by M. R. Omar for the purpose of simulating various nuclear transmutations such as decays, fissions as well as neutron absorptions. PYNUCTRAN helps physicists to avoid cumbersome numerical issues of solving the nuclide depletion equations (also known as the Bateman's equations. These issues include the stiffness of the Batemans equations due to complex decay chain. To date, there are many numerical depletion solvers available such as CRAM, TTM etc.  Interestingly, the designed stochastic solver is easier to code, alas, it consumes computational power. Fortunately, thanks to the current computing technology progress, such that the computational resource is not a problem anymore. Future research involves parallelizing PYNUCTRAN to reduce CPU time to further boost the computing speed.
 
@@ -23,7 +21,7 @@ PYNUCTRAN characterizes nuclides into various isotope species. Each isotope spec
 During the iteration, PYNUCTRAN selects the most probable event, i.e. nothing happens? fission? decay? Such a decision is made by using a random number in [0,1) and based on the probabilistic approach proposed by M. R. Omar. Here, the random selections of the removal methods are based on Poisson statistics, and it assumes a constant λ within the preceding time steps. Once a removal method is selected, then the code will again decide whether the selected removal method is actually occurring or not.
 
 ## Some Python Examples
-#
+
 _Installing PYNUCTRAN from PyPI repository._
 ```bash
 pip install pynuctran
