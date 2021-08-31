@@ -18,7 +18,9 @@ PyNUCTRAN works by creating a massive amount of simulated nuclides in the comput
 
 PyNUCTRAN characterizes nuclides into various isotope species. Each isotope species may consist of a set of removal methods. For example, U-238 disappears from the system via fission or decay. Here, these removal methods occur at a specific rate, λ, per unit second. For a decay, λ is the decay constant. for other removal methods involving neutrons, λ is the reaction rate. The reaction rate is obtained using the neutron flux computed from transport codes, such as MCNP, OpenMC and et cetera.
 
-During the iteration, PyNUCTRAN selects the most probable event, i.e. nothing happens? fission? decay? Such a decision is made by using a random number in [0,1) and based on the probabilistic approach proposed by M. R. Omar. Here, the random selections of the removal methods are based on Poisson statistics, and it assumes a constant λ within the preceding time steps. Once a removal method is selected, then the code will again decide whether the selected removal method is actually occurring or not.
+During the iteration, PyNUCTRAN selects the most probable event, i.e. nothing happens? fission? decay? Such a decision is made by using a random number in [0,1) and based on the probabilistic approach proposed by M. R. Omar. Suppose that a nuclide of an isotope consists of ```n``` removals, thus the probability of k_-th_removal is given by
+![\Large x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\Large&space;f_k\(\Lambda_1,\Lambda_2,...,\Lambda_n\)=\prod_{j=1}^{n}\(\delta_{kj}+\(-1\)^{\delta_{kj}}e^{-\Lambda_j}\)) 
+Here, the random selections of the removal methods are based on Poisson statistics, and it assumes a constant λ within the preceding time steps. Once a removal method is selected, then the code will again decide whether the selected removal method is actually occurring or not.
 
 ## Some Python Examples
 
