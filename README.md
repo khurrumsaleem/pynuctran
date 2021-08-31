@@ -95,7 +95,7 @@ Enums: RemovalType, PrintMode
 ```
 
 
-###### ```class RemovalType(Enum)```
+### ```class RemovalType(Enum)```
 An enumeration distinguishing the nuclide removal types. There are only four (4) possible values:
 ```python
 RemovalType.Fission = 0
@@ -103,93 +103,93 @@ RemovalType.Absoption = 1
 RemovalType.Decay = 2
 RemovalType.NoRemoval = 3
 ```
-#### The ```Removal``` class
+### The ```Removal``` class
 The purpose of this class is to handles the information of a removal method.
 
-###### ```Removal.Removal(Id: str, Lambda: float, Type: RemovalType)```
+##### ```Removal.Removal(Id: str, Lambda: float, Type: RemovalType)```
 A class constructor that defines a nuclide removal method. This is actually a data structure that stores removal parameters of a specific removal. For instance, a beta decay of isotope A is a removal method, where the decay removes isotope A from the system by transmutating A into other species. The class constructor takes three (3) parameters ```Id```, ```Lambda``` and ```Type```. ```Id``` is a string identifier of the removal method; ```Lambda``` is the removal rate in per unit second; and ```Type``` is the removal type.
 
-###### ```Removal.AddDaughters(Yield: float, NuclideIdA: str, NuclideIdB: str)```
+##### ```Removal.AddDaughters(Yield: float, NuclideIdA: str, NuclideIdB: str)```
 Add the products to the removal method. ```Yield``` is the probability (in percent) of producing the daughters pair when the removal event occur; ```NuclideIdA``` is the string identifier of the first product i.e. U238, Pu240...; ```NuclideIdB``` is the string identifier of the second product. Only a pair of isotopes is accepted. For removals that produce only one product, set '' for the second product. If both product Ids are empty string, '', then no product will be created after the removal event. 
-###### ```Removal.SampleDaughters() -> tuples(Isotope, Isotope)```
+##### ```Removal.SampleDaughters() -> tuples(Isotope, Isotope)```
 Randomly selects one of the daugter pair based on the specified product yield. The method returns a pair of isotopes tuple ```(Isotope,Isotope)``` representing the sampled daughter pair.
-######  ```Removal.Id: str```
+#####  ```Removal.Id: str```
 Gets or sets the string identifier of the removal method.
-###### ```Removal.Lambda: float```
+##### ```Removal.Lambda: float```
 Gets or sets the removal rate (per unit second).
-###### ```Removal.Type: RemovalType```
+##### ```Removal.Type: RemovalType```
 Gets or sets the removal type.
-###### ```Removal.Daughters: list```
+##### ```Removal.Daughters: list```
 Stores a Python list containing the daughter pair parameters: ```[[Yield, NuclideIdA, NuclideIdB],[..,..,..],[..,..,..],...].```
 
-#### The ```Isotope``` class
+### The ```Isotope``` class
 An ```Isotope``` class is a data structure that stores various information of an isotope species.
-###### ```Isotope.Isotope(Id: str, Name: str, Z: float, A: float)```
+##### ```Isotope.Isotope(Id: str, Name: str, Z: float, A: float)```
 A class constructor that defines an Isotope. ```Id``` is a string identifier of the isotope, i.e. 'U235','Pu240', and etc. Also, ```Id``` must be short and simple since it will be used later as a reference to the daughter(s) of various removal methods (if any). ```Name``` is a string specifying the full name of the isotope; ```Z``` is a the proton number; and ```A``` is the nucleus number.
-###### ```Isotope.AddRemoval(Method: Removal)```
+##### ```Isotope.AddRemoval(Method: Removal)```
 Adds a removal method, ```Method```, to the isotope.
-###### ```Isotope.Id: str```
+##### ```Isotope.Id: str```
 Gets or sets the string identification of the isotope.
-###### ```Isotope.Name: str```
+##### ```Isotope.Name: str```
 Gets or sets the name of the isotope.
-###### ```Isotope.Z: float```
+##### ```Isotope.Z: float```
 Gets or sets the proton number of the isotope.
-###### ```Isotope.A: str```
+##### ```Isotope.A: str```
 Gets or sets the mass number of the isotope.
-###### ```Isotope.Removals: list(Removal)```
+##### ```Isotope.Removals: list(Removal)```
 A list of removal methods experienced by the isotope.
 
-#### The ```Nuclide``` class
-###### ```Nuclide.Nuclide(NIsotope: Isotope, CreationStep: int)```
+### The ```Nuclide``` class
+##### ```Nuclide.Nuclide(NIsotope: Isotope, CreationStep: int)```
 A class constructor that creates a nuclide of species ```NIsotope```. ```CreationStep``` is an integer specifying the time step it is being created. ```CreationStep``` enables the computation of the average isotope life time in the simulation.
-###### ```Nuclide.NId: int```
+##### ```Nuclide.NId: int```
 Gets the integer identification number. This number is automatically generated during nuclide's creation.
-###### ```Nuclide.Isotope: Isotope```
+##### ```Nuclide.Isotope: Isotope```
 Gets or sets the isotope species of the nuclide.
-###### ```Nuclide.CreationStep: int```
+##### ```Nuclide.CreationStep: int```
 Gets or sets the time step it was created.
 
-#### The ```Physics``` class
+### The ```Physics``` class
 Handles the necessary routines that helps to simulate the transmutation processes.
-###### ```Physics.Physics(Id: str, TimeInterval: float, Steps: int)```
+##### ```Physics.Physics(Id: str, TimeInterval: float, Steps: int)```
 A class constructor that defines a new simulation. ```Id``` is a string identifier of the simulation; ```TimeInterval``` is the real time interval between time successive time steps; and ```Steps``` is the total number of time steps to simulate.
-###### ```Physics.AddIsotope(NewIsotope: Isotope)```
+##### ```Physics.AddIsotope(NewIsotope: Isotope)```
 Adds a new isotope, ```NewIsotope: Isotope```, to the simulation.
-###### ```Physics.GenerateIsotopes(NuclideIsotope: Isotope, Count: int)```
+##### ```Physics.GenerateIsotopes(NuclideIsotope: Isotope, Count: int)```
 Generates and adds nuclides of the same species, ```NuclideIsotope```, into the source table. Here, ```Count``` is the total number of nuclides to generate.
-###### ```Physics.SelectRemoval(SelectedIsotope: Isotope) -> Removal```
+##### ```Physics.SelectRemoval(SelectedIsotope: Isotope) -> Removal```
 Samples a nuclide removal method (Also selects the NoRemoval event).```SelectedIsotope``` is the isotope species of the simulated nuclide. This function returns the selected removal method.
-###### ```Physics.DoesRemovalHappens(rm: Removal) -> bool```
+##### ```Physics.DoesRemovalHappens(rm: Removal) -> bool```
 Decides whether a removal process occurs. ```rm``` is the removal of the nuclide species. Returns ```True``` if the removal occurs, ```False``` otherwise.
-###### ```Physics.ProcessRemoval(Type: RemovalType, NuclideToProcess: Nuclide)```
+##### ```Physics.ProcessRemoval(Type: RemovalType, NuclideToProcess: Nuclide)```
 Processes a removal event, i.e. kills the removed nuclide, and add new nuclides in the source table. ```RemovalType``` is the type of the undergoing removal; ```NuclideToProcess``` is the nuclide subjected to the removal event.
-###### ```Physics.UpdateStep()```
+##### ```Physics.UpdateStep()```
 Updates the current time steps, processes the source table shift.
-###### ```IterateOverNuclides(self, CurrentStep: int)```
+##### ```IterateOverNuclides(self, CurrentStep: int)```
 A subroutine containing the loop that iterates over the entire source nuclides table. During each time step, the nuclide source table contains the nuclides that are waiting for their fate: to be removed from the system, or not. Therefore, PyNUCTRAN iterates over these nuclides, to decide and simulate their removal fate. ```CurrentStep``` is an integer specifying the instantaneous time step.
-###### ```Physics.Run(Seed: int = 0)```
+##### ```Physics.Run(Seed: int = 0)```
 Begin executing the simulation from ```timestep = 0``` to ```Steps```. ```Seed``` is the seed number of Python's pseudo-random number generator (PRNG). Use the same seed number if you need to maintain the reproduce the same result.
-###### ```Physics.PlotConcentrations(self, Ids: list = [], Range: tuple = (0, 0), Normalize: bool = False, Color: dict = {})```
+##### ```Physics.PlotConcentrations(self, Ids: list = [], Range: tuple = (0, 0), Normalize: bool = False, Color: dict = {})```
 Plots the concentration curves over time steps. ```Ids``` is the list of isotope identification strings, specifying which isotope concentration to include in the plot; ```Range``` is the time step range. The default is from 0 to the specified maximum steps. ```Normalize``` is a boolean specifying whether the concentrations should be normalized or not. A normalized concentration is equals to [the nuclide count] / [total initial nuclides]. ```Color```: A python dictionary specifying the curve colors that differentiate the isotopes. The key of the dictionary is equivalent to the isotope Id defined in the simulation. See ```Isotope.Id```.
-###### ```Physics.Isotopes: dict(Isotopes)```   
+##### ```Physics.Isotopes: dict(Isotopes)```   
 A list of isotopes defined in the simulation.
-###### ```Physics.NuclidesTable: dict```
+##### ```Physics.NuclidesTable: dict```
 A Python dictionary consists of two arrays, array A and B, for storing the source nuclides and the product nuclides. 
-###### ```Physics.Id: str```
+##### ```Physics.Id: str```
 Stores the string identification of the simulation.
-###### ```Physics.Dt: float```
+##### ```Physics.Dt: float```
 Gets or sets the time interval.
-###### ```Physics.Steps: int```
+##### ```Physics.Steps: int```
 Gets or sets total number of steps to simulate.
-###### ```Physics.SourceTable: str```
+##### ```Physics.SourceTable: str```
 A string specifying  the key of the current  source table.
-###### ```Physics.ProductTable: str```
+##### ```Physics.ProductTable: str```
 A string specifying the key of the current product table.
-###### ```Physics.IsotopesToMonitor: list```
+##### ```Physics.IsotopesToMonitor: list```
 A list of  isotope  identifications  specifying the isotopes should be tallied  during  the simulation.
-###### ```Physics.OutputSkip: int```
+##### ```Physics.OutputSkip: int```
 The number of steps  skipped  for console printing. Note: The ```Physics.DisplayProgressOnly``` property  must be set to ```False```.
-###### ```Physics.IsotopeConcentrations: dict```
+##### ```Physics.IsotopeConcentrations: dict```
 A dictionary containing the  concentrations of  all isotopes over the entire simulated  time steps. The keys of the dictionary is equivalent to the isotope Id  defined  in  the  simulation. The  rows  of the dictionary corresponds to the time step.
   ```                                          
    [Isotope1]  [Isotope2]  [Isotope3] ...
@@ -199,13 +199,13 @@ A dictionary containing the  concentrations of  all isotopes over the entire sim
    :           :           :
    :           :           :
 ```
-###### ```Physics.ProcessedCount: int```
+##### ```Physics.ProcessedCount: int```
 The total number of nuclides simulated during the entire simulation.
-###### ```Physics.InitialNuclidesCount: dict```
+##### ```Physics.InitialNuclidesCount: dict```
 A dictionary storing the total number of initial nuclides (when the time step = 0).
-###### ```Physics.IsotopeLifetime: dict```
+##### ```Physics.IsotopeLifetime: dict```
 A dictionary that stores the average lifetime of all isotopes defined in the simulation. 
-###### ```Physics.CountTable: dict```
+##### ```Physics.CountTable: dict```
 A dictionary that stores the CURRENT step's total number of nuclides.
 
 
