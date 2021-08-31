@@ -66,6 +66,11 @@ MySimulation.Run()
 MySimulation.PlotConcentrations(Color={'Th234': '#23d212', 'Pa234':'#11211f'})
 ```
 
+_Sample output_
+
+![Figure_1](https://user-images.githubusercontent.com/33319386/131448902-fd33d3fd-ac21-493f-bda4-551ddba6dbe8.png)
+Sample output for Lago & Rahnema (2016) benchmark test. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004]
+
 
 ## License
 (c) M.R.Omar, School of Physics, Universiti Sains Malaysia, 11800 Penang, Malaysia.
