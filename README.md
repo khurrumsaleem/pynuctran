@@ -14,11 +14,11 @@ If you don't prefer dealing with complicated mathematical methods to solve the B
 
 ## Summary of the Stochastic Transmutation Method
 
-PYNUCTRAN works by creating a massive amount of simulated nuclides in the computer memory. Also, the simulation time is divided into several time steps. At each time step, PYNUCTRAN iterates over each of these simulated nuclides and decides whether each of these nuclides undergoes a removal process or not. The removal process includes the decay, fission and absorptions and any other user-defined removal methods. The term 'removal' is used because if the removal process occurs, it mutates the nuclide species, and the isotope is now transformed (removed) into a new product(s) depending on the removal method. If removal occurs, the nuclide is removed from the simulation and its product(s) will be stored for the iteration during the next time steps.
+PyNUCTRAN works by creating a massive amount of simulated nuclides in the computer memory. Also, the simulation time is divided into several time steps. At each time step, PYNUCTRAN iterates over each of these simulated nuclides and decides whether each of these nuclides undergoes a removal process or not. The removal process includes the decay, fission and absorptions and any other user-defined removal methods. The term 'removal' is used because if the removal process occurs, it mutates the nuclide species, and the isotope is now transformed (removed) into a new product(s) depending on the removal method. If removal occurs, the nuclide is removed from the simulation and its product(s) will be stored for the iteration during the next time steps.
 
-PYNUCTRAN characterizes nuclides into various isotope species. Each isotope species may consist of a set of removal methods. For example, U-238 disappears from the system via fission or decay. Here, these removal methods occur at a specific rate, λ, per unit second. For a decay, λ is the decay constant, whereas, for other removal methods involving neutrons, λ is the reaction rate. The reaction rate is obtained using the neutron flux computed from transport codes, such as MCNP, OpenMC and et cetera.
+PyNUCTRAN characterizes nuclides into various isotope species. Each isotope species may consist of a set of removal methods. For example, U-238 disappears from the system via fission or decay. Here, these removal methods occur at a specific rate, λ, per unit second. For a decay, λ is the decay constant. for other removal methods involving neutrons, λ is the reaction rate. The reaction rate is obtained using the neutron flux computed from transport codes, such as MCNP, OpenMC and et cetera.
 
-During the iteration, PYNUCTRAN selects the most probable event, i.e. nothing happens? fission? decay? Such a decision is made by using a random number in [0,1) and based on the probabilistic approach proposed by M. R. Omar. Here, the random selections of the removal methods are based on Poisson statistics, and it assumes a constant λ within the preceding time steps. Once a removal method is selected, then the code will again decide whether the selected removal method is actually occurring or not.
+During the iteration, PyNUCTRAN selects the most probable event, i.e. nothing happens? fission? decay? Such a decision is made by using a random number in [0,1) and based on the probabilistic approach proposed by M. R. Omar. Here, the random selections of the removal methods are based on Poisson statistics, and it assumes a constant λ within the preceding time steps. Once a removal method is selected, then the code will again decide whether the selected removal method is actually occurring or not.
 
 ## Some Python Examples
 
@@ -47,6 +47,10 @@ Th234_RM = Removal('Decay', lambda_Th234, RemovalType.Decay)
 Th234_RM.AddDaughters(100.0, 'Pa234', '')
 # Add the removal method to the created isotope Th234.
 Th234.AddRemoval(Th234_RM)
+
+# Proceed creating more isotopes (if any)...
+...
+...
 ```
 
 _Running the simulation._
@@ -79,3 +83,47 @@ Permission is hereby granted,  free of charge,  to any person  obtaining  a copy
 The  above  copyright  notice  and  this permission notice  shall  be  included  in  all copies or substantial portions of the Software.
 
 THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  OR IMPLIED, INCLUDING  BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT  SHALL  THE AUTHORS  OR COPYRIGHT  HOLDERS  BE LIABLE FOR ANY CLAIM,  DAMAGES OR  OTHER LIABILITY,  WHETHER  IN  AN  ACTION  OF CONTRACT,  TORT  OR OTHERWISE,  ARISING FROM,  OUT OF OR IN CONNECTION WITH THE CODE OR THE USE OR OTHER DEALINGS IN THE CODE.
+
+## Library Documentation
+
+In order to efficiently acquire the information delivered in this section, the reader is adviced to have the basic idea of object-oriented programming. This section uses the standard OOP terms to ensure effective explanation. Thanks to the simplicity of the method implemented in PyNUCTRAN, the library consists of a small number of classes and structures. You will discover that the library has 600++ lines of codes, which is a lot less than the state-of-the-art Monte Carlo transport codes. Also, identifiers are stylized using the CamelNotation, just like most Microsoft developers codes appearance. However, some identifiers does not use the camel notation, especially those for temporary data storage.
+
+The library consists of four (4) classes and two (2) enumerations.
+```
+Classes: Physics, Isotope, Removal, Nuclide
+Enums: RemovalType, PrintMode
+```
+
+##### ```class RemovalType(Enum)```
+An enumeration distinguishing the nuclide removal types. There are only four (4) possible values:
+```python
+RemovalType.Fission = 0
+RemovalType.Absoption = 1
+RemovalType.Decay = 2
+RemovalType.NoRemoval = 3
+```
+##### ```class Removal(Id: str, Lambda: float, Type: RemovalType)```
+Defines a nuclide removal method. This is actually a data structure that stores removal parameters of a specific removal. For instance, a beta decay of isotope A is a removal method, where the decay removes isotope A from the system by transmutating A into other species. The class constructor takes three (3) parameters ```Id```, ```Lambda``` and ```Type```. ```Id``` is a string identifier of the removal method; ```Lambda``` is the removal rate in per unit second; and ```Type``` is the removal type.
+
+##### ```Removal.AddDaughters(Yield: float, NuclideIdA: str, NuclideIdB: str)```
+Add the products to the removal method. ```Yield``` is the probability (in percent) of producing the daughters pair when the removal event occur; ```NuclideIdA``` is the string identifier of the first product i.e. U238, Pu240...; ```NuclideIdB``` is the string identifier of the second product. Only a pair of isotopes is accepted. For removals that produce only one product, set '' for the second product. If both product Ids are empty string, '', then no product will be created after the removal event. 
+##### ```Removal.SampleDaughters() -> tuples(Isotope, Isotope)```
+Randomly selects one of the daugter pair based on the specified product yield. The method returns a pair of isotopes tuple ```(Isotope,Isotope)``` representing the sampled daughter pair.
+#####  ```Removal.Id: str```
+Gets or sets the string identifier of the removal method.
+##### ```Removal.Lambda: float```
+Gets or sets the removal rate (per unit second).
+##### ```Removal.Type: RemovalType```
+Gets or sets the removal type.
+##### ```Removal.Daughters: list```
+Stores a Python list containing the daughter pair parameters: ```[[Yield, NuclideIdA, NuclideIdB],[..,..,..],[..,..,..],...].```
+
+
+
+
+
+
+
+
+
+
