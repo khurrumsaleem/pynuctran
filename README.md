@@ -1,12 +1,12 @@
 # PyNUCTRAN
 ## A Python Library for Stochastic Nuclear Transmutation Solver.
 
-Initially developed, designed and proposed by M. R. Omar for the purpose of simulating various nuclear transmutations such as decays, fissions as well as neutron absorptions. PYNUCTRAN helps physicists to avoid cumbersome numerical issues of solving the nuclide depletion equations (also known as the Bateman's equations). These issues include the stiffness of the Batemans equations due to complex decay chain. To date, there are many numerical depletion solvers available such as CRAM, TTM etc.  Interestingly, the designed stochastic solver is easier to code, alas, it consumes computational power. Fortunately, thanks to the current computing technology progress, such that the computational resource is not a problem anymore. Future research involves parallelizing PYNUCTRAN to reduce CPU time to further boost the computing speed.
+Initially developed, designed and proposed by M. R. Omar for the purpose of simulating various nuclear transmutations such as decays, fissions as well as neutron absorptions. PyNUCTRAN helps physicists to avoid cumbersome numerical issues of solving the nuclide depletion equations (also known as the Bateman's equations). These issues include the stiffness of the Batemans equations due to complex decay chain. To date, there are many numerical depletion solvers available such as CRAM, TTM etc.  Interestingly, the designed stochastic solver is easier to code, alas, it consumes computational power. Fortunately, thanks to the current computing technology progress, such that the computational resource is not a problem anymore. Future research involves parallelizing PyNUCTRAN to reduce CPU time to further boost the computing speed.
 
 ## Features
 
 - Capable of simulating complex depletion chains.
-- PYNUCTRAN simulates the actual transmutations processes, thus, it can be used to verify other analytical/numerical depletion codes.
+- PyNUCTRAN simulates the actual transmutations processes, thus, it can be used to verify other analytical/numerical depletion codes.
 - Create a plot of various isotope concentrations.
 - Helps nuclear physics students to understands transmutations processes through simulations. They can create, study and design any depletion chains and simulate the transmutations.
 
@@ -14,7 +14,7 @@ If you don't prefer dealing with complicated mathematical methods to solve the B
 
 ## Summary of the Stochastic Transmutation Method
 
-PyNUCTRAN works by creating a massive amount of simulated nuclides in the computer memory. Also, the simulation time is divided into several time steps. At each time step, PYNUCTRAN iterates over each of these simulated nuclides and decides whether each of these nuclides undergoes a removal process or not. The removal process includes the decay, fission and absorptions and any other user-defined removal methods. The term 'removal' is used because if the removal process occurs, it mutates the nuclide species, and the isotope is now transformed (removed) into a new product(s) depending on the removal method. If removal occurs, the nuclide is removed from the simulation and its product(s) will be stored for the iteration during the next time steps.
+PyNUCTRAN works by creating a massive amount of simulated nuclides in the computer memory. Also, the simulation time is divided into several time steps. At each time step, PyNUCTRAN iterates over each of these simulated nuclides and decides whether each of these nuclides undergoes a removal process or not. The removal process includes the decay, fission and absorptions and any other user-defined removal methods. The term 'removal' is used because if the removal process occurs, it mutates the nuclide species, and the isotope is now transformed (removed) into a new product(s) depending on the removal method. If removal occurs, the nuclide is removed from the simulation and its product(s) will be stored for the iteration during the next time steps.
 
 PyNUCTRAN characterizes nuclides into various isotope species. Each isotope species may consist of a set of removal methods. For example, U-238 disappears from the system via fission or decay. Here, these removal methods occur at a specific rate, λ, per unit second. For a decay, λ is the decay constant. for other removal methods involving neutrons, λ is the reaction rate. The reaction rate is obtained using the neutron flux computed from transport codes, such as MCNP, OpenMC and et cetera.
 
