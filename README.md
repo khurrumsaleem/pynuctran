@@ -1,7 +1,7 @@
 # PyNUCTRAN
 ## A Python Library for Stochastic Nuclear Transmutation Solver.
 
-Initially developed, designed and proposed by M. R. Omar for the purpose of simulating various nuclear transmutations such as decays, fissions as well as neutron absorptions. PYNUCTRAN helps physicists to avoid cumbersome numerical issues of solving the nuclide depletion equations (also known as the Bateman's equations. These issues include the stiffness of the Batemans equations due to complex decay chain. To date, there are many numerical depletion solvers available such as CRAM, TTM etc.  Interestingly, the designed stochastic solver is easier to code, alas, it consumes computational power. Fortunately, thanks to the current computing technology progress, such that the computational resource is not a problem anymore. Future research involves parallelizing PYNUCTRAN to reduce CPU time to further boost the computing speed.
+Initially developed, designed and proposed by M. R. Omar for the purpose of simulating various nuclear transmutations such as decays, fissions as well as neutron absorptions. PYNUCTRAN helps physicists to avoid cumbersome numerical issues of solving the nuclide depletion equations (also known as the Bateman's equations). These issues include the stiffness of the Batemans equations due to complex decay chain. To date, there are many numerical depletion solvers available such as CRAM, TTM etc.  Interestingly, the designed stochastic solver is easier to code, alas, it consumes computational power. Fortunately, thanks to the current computing technology progress, such that the computational resource is not a problem anymore. Future research involves parallelizing PYNUCTRAN to reduce CPU time to further boost the computing speed.
 
 ## Features
 
@@ -75,7 +75,7 @@ _Sample output_
 Sample PYNUCTRAN output using ```Physics.PlotConcentration()``` for Lago & Rahnema (2017) benchmark test #5. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004]
 
 
-## License
+## License (MIT)
 (c) M.R.Omar, School of Physics, Universiti Sains Malaysia, 11800 Penang, Malaysia.
 
 Permission is hereby granted,  free of charge,  to any person  obtaining  a copy of  PYNUCTRAN and associated documentation files (the "Code"), to deal in the Library without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Code, and to permit persons to whom the Library is furnished to do so,  subject to the following conditions:
@@ -165,7 +165,7 @@ Decides whether a removal process occurs. ```rm``` is the removal of the nuclide
 Processes a removal event, i.e. kills the removed nuclide, and add new nuclides in the source table. ```RemovalType``` is the type of the undergoing removal; ```NuclideToProcess``` is the nuclide subjected to the removal event.
 ##### ```Physics.UpdateStep()```
 Updates the current time steps, processes the source table shift.
-##### ```IterateOverNuclides(self, CurrentStep: int)```
+##### ```Physics.IterateOverNuclides(self, CurrentStep: int)```
 A subroutine containing the loop that iterates over the entire source nuclides table. During each time step, the nuclide source table contains the nuclides that are waiting for their fate: to be removed from the system, or not. Therefore, PyNUCTRAN iterates over these nuclides, to decide and simulate their removal fate. ```CurrentStep``` is an integer specifying the instantaneous time step.
 ##### ```Physics.Run(Seed: int = 0)```
 Begin executing the simulation from ```timestep = 0``` to ```Steps```. ```Seed``` is the seed number of Python's pseudo-random number generator (PRNG). Use the same seed number if you need to maintain the reproduce the same result.
