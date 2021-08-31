@@ -1,7 +1,7 @@
 # PyNUCTRAN
 ## A Python Library for Stochastic Nuclear Transmutation Solver.
 
-<p style="text-align: center">```pip install pynuctran```</p>
+### ```pip install pynuctran```
 
 PyNUCTRAN is a Python library created by M. R. Omar for simulating various nuclear transmutations such as decays, fissions, and neutron absorptions. The code helps physicists avoid cumbersome numerical issues of solving the nuclide depletion equations (also known as the Bateman's equations). These issues include the stiffness of the Batemans equations due to the complex decay chain problems. To date, there are many numerical depletion solvers available such as CRAM, TTM etc.  Interestingly, the proposed stochastic solver is simple to code, but it consumes computational power. Thanks to the current computing technology progress, the computational resource is not a problem anymore. Future research involves parallelizing PyNUCTRAN to reduce CPU time, thus further boosting the computing speed. 
 
