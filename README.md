@@ -22,11 +22,11 @@ During the iteration, PyNUCTRAN selects the most probable event and tests whethe
 
 ![\Medium \bg_black x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\normal&space;p_k\(\Lambda_1,\Lambda_2,...,\Lambda_n\)=\prod_{j=1}^{n}\(\delta_{kj}+\(-1\)^{\delta_{kj}}e^{-\Lambda_j}\)) 
 
-Then, then the k-th removal is selected if the following condition is satisfied
+where ![\small](https://latex.codecogs.com/svg.latex?\small&space;\Lambda_k=\lambda_k\Delta{t}) with ![\small](https://latex.codecogs.com/svg.latex?\small&space;\Delta{t}) as the time interval between steps. Then, then the k-th removal is selected if the following condition is satisfied
 
 ![\Medium \bg_black x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\normal&space;\sum_{j=1}^{k-1}p_j<\gamma\sum_{j=1}^{n}p_j\le\sum_{j=1}^{k}p_j) 
 
-Here, the random selections of the removal methods are based on Poisson statistics, and it assumes a constant λ within the preceding time steps. Once a removal method is selected, then the code will again decide whether the selected removal event is occurring or not. A new random number (https://latex.codecogs.com/svg.latex?\small&space;\gamma\in\[0,1\)) is sampled and the removal event occurs if the following condition is met:
+Here, the random selections of the removal methods are based on Poisson statistics, and it assumes a constant λ within the preceding time steps. Once a removal method is selected, then the code will again decide whether the selected removal event is occurring or not. A new random number ![\small](https://latex.codecogs.com/svg.latex?\small&space;\gamma\in\[0,1\)) is sampled and the removal event occurs if the following condition is met:
 
 ![\Large \bg_black x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\normal&space;\gamma>\(1-e^{-\Lambda_k}\)) 
 
