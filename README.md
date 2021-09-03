@@ -1,34 +1,33 @@
 # PyNUCTRAN
-## A Quasi Monte Carlo Nuclear Transmutation Solver.
+## A Pseudo-Monte Carlo Simulation of Nuclear Transmutation.
 
 ### ```pip install pynuctran```
 
-PyNUCTRAN is a Python library created by M. R. Omar for simulating various nuclear transmutations such as decays, fissions, and neutron absorptions. The code helps physicists avoid cumbersome numerical issues of solving the nuclide depletion equations (also known as the Bateman's equations). These issues include the stiffness of the Batemans equations due to the complex decay chain problems. To date, there are many numerical depletion solvers available such as CRAM, TTM etc.  Interestingly, the proposed stochastic solver is simple to code, but it consumes computational power. Thanks to the current computing technology progress, the computational resource is not a problem anymore. Future research involves parallelizing PyNUCTRAN to reduce CPU time, thus further boosting the computing speed. 
+PyNUCTRAN is a Python library created by M. R. Omar for simulating various nuclear transmutations such as decays, fissions, and neutron absorptions. The code helps physicists avoid cumbersome numerical issues of solving the nuclide depletion equations (also known as the Bateman's equations). These issues include the stiffness of the Batemans equations due to the complex decay chain problems. To date, there are many numerical depletion solvers available such as CRAM, TTM etc. Unfortunately, these methods are complicated and requires sophisticated mathematical methods. It is also possible to simulates the actual transmutation processes using Monte Carlo method via iterations over a massive amount of nuclides. Alas, the simulation speed linearly increase with increasing accuracy, which makes it not practical. Thanks to the variance reduction technique in Monte Carlo method, the concept of isotope weight is applied in this algorithm to boost the CPU time and accuracy. PyNUCTRAN simulates the actual transmutation processes, however, it does not generate pseudo-random numbers nor any random sampling. By applying the standard Poisson statistics, isotope weights can be adjusted according the the pre-determined transmutation probabilities. Such a trick substantially improve the simulation time! The method is easy to understand, and it can be used by physicists from various mathematical background.
 
 ## Features
 
-- Capable of simulating complex depletion chains.
-- PyNUCTRAN simulates the actual transmutations processes, thus, it can be used to verify other analytical/numerical depletion codes.
+- Capable of simulating complex transmutation chains.
+- PyNUCTRAN simulates the actual transmutations processes without losing the accuracy of the computation.
 - Create a plot of various isotope concentrations.
 - Helps nuclear physics students to understands transmutations processes through simulations. They can create, study and design any depletion chains and simulate the transmutations.
 
-If you don't prefer dealing with complicated mathematical methods to solve the Bateman's equation, you could try PYNUCTRAN. As long as you have the computational power!
+If you don't prefer dealing with complicated mathematical methods to solve Bateman's equations,  give PyNUCTRAN a try!
 
 ## Summary of the Stochastic Transmutation Method
 
-PyNUCTRAN works by creating a massive amount of simulated nuclides in the computer memory. Also, the code divides the simulation time into discrete timesteps. In each step, PyNUCTRAN iterates over each of these simulated nuclides. Here, the code decides whether each of these nuclides undergoes a removal process or not. The removal process includes the decay, fission and absorptions and any other user-defined removal methods. As the removal process occurs, it mutates the nuclide species. At this point, the removal event transforms the isotope (removed) into one or more daughter nuclides, depending on the removal method. If removal occurs, the code removes the nuclide from the simulation, and its product(s) will be stored for the iteration during the next timestep.
+A transmutation process involves the removal of a nuclide from a system. Then it leads to the creation of another daughter nuclide. For instance, the decay of U-238 into Th-234 involves removing U-238 from the system via alpha decay, which in fact mutating the U-238 nucleus into Th-234. In reality, such a transmutation process occur at a certain rate, [lambda]. PyNUCTRAN works by first accumulating the removal parameters from the user. The removal parameters include the rate, parent isotope and the daughter isotope(s). Practically, any number of removals can be added to PyNUCTRAN. Next, PyNUCTRAN prepares the removal probability (RP) table that stores the probability of various transmutation processes to occur. The RP-table boosts the computational speed by substantially reducing flops since the probabilities are pre-calculated before the simulation.
 
-PyNUCTRAN characterizes nuclides into various isotope species. Each isotope species may consist of a set of removal methods. For example, U-238 disappears from the system via fission or decay. Here, these removal methods occur at a specific rate, λ, per unit second. For decay events, λ is the well-known decay constant. For other removal methods involving neutrons, λ is the reaction rate. The reaction rate is obtained using the neutron flux computed from transport codes, such as MCNP, OpenMC and et cetera.
+The simulation requires the division of time into a regular interval, dt, of N steps. Consider an isotope-i which consists of J(i) removal processes. The probability a removal of isotope-i from a system due to j-th removal process can be derived from Poisson statistics:
 
-During the iteration, PyNUCTRAN selects the most probable event and tests whether the selected removal event occurs. Such a selection utilizes a random number ![\small](https://latex.codecogs.com/svg.latex?\small&space;\gamma\in\[0,1\)), and it applies the probabilistic approach proposed by M. R. Omar. Suppose that a nuclide of an isotope consists of ```n``` removals. Thus the probability of selecting the k-th removal is given by
 
-![\Medium \bg_black x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\normal&space;p_k\(\Lambda_1,\Lambda_2,...,\Lambda_n\)=\prod_{j=1}^{n}\(\delta_{kj}+\(-1\)^{\delta_{kj}}e^{-\Lambda_j}\)) 
+The probability of isotope-i for not being removed from the system is given by
 
-where ![\small](https://latex.codecogs.com/svg.latex?\small&space;\Lambda_k=\lambda_k\Delta{t}) with ![\small](https://latex.codecogs.com/svg.latex?\small&space;\Delta{t}) as the time interval between steps. Then, then the k-th removal is selected if the following condition is satisfied
+At the beginning of the simulation, each isotope-i has an initial weight, w0(i), which corresponds to its initial concentration. During each time step, the weight of its daughter isotopes-k, w(k≠i) (due to all removals defined for isotope-i), is adjusted:
 
-![\Medium \bg_black x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}](https://latex.codecogs.com/svg.latex?\normal&space;\sum_{j=1}^{k-1}p_j<\gamma\sum_{j=1}^{n}p_j\le\sum_{j=1}^{k}p_j) 
+After processing all removal, the weight of isotope-i, w(i) is adjusted,
 
-Here, the random selections of the removal methods follow the Poisson process, and it assumes a constant λ within the preceding time steps. Once a removal method is selected, then the code will process the removal event accordingly.
+These procedures repeat for N steps. Thus, the solution of the associated Bateman's equation can be viewed by plotting w versus the time steps. Note also that this algorithm does not require any random sampling. In essence, one may perceive this method as a Monte Carlo method because it simulates the actual transmutation events during each time step. Therefore, the method is a pseudo-Monte Carlo technique, and its solution is free from random errors. 
 
 ## Some Python Examples
 
@@ -40,55 +39,50 @@ _Importing PYNUCTRAN library to your Python code._
 ```python
 from pynuctran.solver import *
 ```
-_Defining an isotope and add it to the simulation._
-```python
-from pynuctran.solver import *
-
-# Creates an isotope (Thorium-234)
-Th234 = Isotope('Th234', 'Thorium-234', 90, 234)
-# Create a removal method with decay type. The specified half-life must be in seconds.
-half_life_Th234 = 2.082240E+06
-# Calculate the decay constant: λ = ln(2)/t_halflife
-lambda_Th234 = np.log(2.0) / half_life_Th234
-# Create the removal method using the Removal() class constructor.
-Th234_RM = Removal('Decay', lambda_Th234, RemovalType.Decay)
-# Add the decay product. Here, the decay product is Pa-234 and the yield is 100%. 
-# Here, it is compulsory to create another isotope -> Pa234. If you do not wish to monitor the product, leave the field blank, i.e. ''.
-Th234_RM.AddDaughters(100.0, 'Pa234', '')
-# Add the removal method to the created isotope Th234.
-Th234.AddRemoval(Th234_RM)
-
-# Proceed creating more isotopes (if any)...
-...
-...
-```
 
 _Running the simulation._
 ```python
-# Creates a simulation Test, with time interval 100secs over 200 time steps.
-MySimulation = Physics(Id='Test', TimeInterval=100, Steps=200)
-# Add the created isotopes.
-MySimulation.AddIsotope(Th234)
-MySimulation.AddIsotope(Pa234)
-# Generates the initial nuclides at (t=0sec). Here, we create 5000 Th234 nuclides.
-MySimulation.GenerateNuclides(Th234, 5000)
-# Executes the simulation.
-MySimulation.Run()
-# Plots the concentration curve over time steps. 
-MySimulation.PlotConcentrations(Color={'Th234': '#23d212', 'Pa234':'#11211f'})
+# Define isotope names.
+iso_names = ['U235', 'U236','U237', 'Np237']
+# Initialize the solver.
+sim = solver(isotope_names=iso, time_interval=86.4, steps=1000)
+
+# Add the removal processes for U235...
+# U-235 decay: isotope_id=0 since it is the first iso_names element ...
+# products=[-1] indicates the code should not monitor the daugther isotopes. The rate must be in per second.
+sim.add_removal(isotope_id=0, rate=np.log(2)/2.2210238880E+16, products=[-1])
+# U-235 neutron absorptions.
+sim.add_removal(isotope_id=0, rate=1E-4, products=[1])
+
+# Add the removal processes for U236, U237 and so on...
+sim.add_removal(isotope_id=1, rate=np.log(2)/7.390789920E+14, [-1])
+sim.add_removal(isotope_id=1, rate=1E-4, [2])
+sim.add_removal(isotope_id=2, rate=np.log(2)/5.8320E+05, [3])
+sim.add_removal(isotope_id=3, rate=np.log(2)/6.7659494310E+13, [-1])
+
+# Prepare the RP-table (removal probability table)
+sim.preprocess_p_table()
+
+# Assign the initial weight of all isotopes. The length of w0 is equal to the number of isotopes being monitored.
+w0 = [1.0, 0.0, 0.0, 0.0]
+
+# Run the simulation.
+final_w = sim.run(w0)
+
+# Plot the concentrations of all isotopes.
+sim.plot_concentrations(w=final_w, isotopes_to_plot=[0,1,2,3])
 ```
 
 _Sample output_
 
-<img src="https://user-images.githubusercontent.com/33319386/131448902-fd33d3fd-ac21-493f-bda4-551ddba6dbe8.png" alt="drawing" width="400"/><img src="https://user-images.githubusercontent.com/33319386/131520815-03ec0513-8f56-4d58-9ee2-1186614e3408.png" alt="drawing" width="400"/>
 
-Sample PYNUCTRAN output using ```Physics.PlotConcentration()``` for Lago & Rahnema (2017) benchmark test #5. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004]
+
+Sample PYNUCTRAN output using ```solver.plot_concentrations()``` for Lago & Rahnema (2017) benchmark test #5. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004]
 
 
 ## License (MIT)
-(c) M.R.Omar, School of Physics, Universiti Sains Malaysia, 11800 Penang, Malaysia.
 
-Permission is hereby granted,  free of charge,  to any person  obtaining  a copy of  PYNUCTRAN and associated documentation files (the "Code"), to deal in the Library without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Code, and to permit persons to whom the Library is furnished to do so,  subject to the following conditions:
+Permission is hereby granted,  free of charge,  to any person  obtaining  a copy of  PyNUCTRAN and associated documentation files (the "Code"), to deal in the Library without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Code, and to permit persons to whom the Library is furnished to do so,  subject to the following conditions:
 
 The  above  copyright  notice  and  this permission notice  shall  be  included  in  all copies or substantial portions of the Software.
 
@@ -96,10 +90,19 @@ THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  OR IMPLIED,
 
 ## Library Documentation
 
-Before reading this section, the reader must have the basic idea of object-oriented programming (OOP). This section uses the standard OOP terms to ensure effective explanation. Of course, thanks to the simplicity of the method implemented in PyNUCTRAN. Consequently, the library consists of a small number of classes and structures. You will discover that the library only has 600++ lines of Python code, which is a lot less than the state-of-the-art Monte Carlo transport codes. Also, identifiers are stylized using the CamelNotation, just like most Microsoft-oriented codes. It improves the code readability without any fancy underscores. However, some identifiers do not use camel notation, especially those for temporary data storage.
+Before reading this section, you must have the basic idea of object-oriented programming (OOP). This section uses the standard OOP terms to ensure effective explanation. Of course, thanks to the simplicity of the method implemented in PyNUCTRAN. Consequently, the library consists of a small number of classes and structures. You will discover that the library only has 600++ lines of Python code, which is a lot less than the state-of-the-art Monte Carlo transport codes!
 
+#### ``` solver.solver(isotope_names: list, time_interval: float = 1.0, steps: int = 100, precision: float = 1E-20) ```
+Initializes the solver. ```isotope_names``` is a list of isotope names involved in the simulation. An isotope ID corresponds to the index of ```isotope_names```. ```time_interval``` is the interval of between time steps (in seconds). ```steps``` is the total number of time steps to simulate and ``` precision``` is the tolerance value of isotope weights. Here, if an isotope weight falls below ```precision```, then PyNUCTRAN will stop updating the weight during the next time step (unless its weight increases to a value greater than ```precision``` at later times; for this case, PyNUCTRAN will re-monitor the isotope). 
+#### ``` solver.add_removal(isotope_id: int, rate: float, products: list)```
+Defines and adds a new removal process. ```isotope_id``` is the integer ID of the isotope subjected to the removal (the parent isotope). The ID corresponds to the index of ```isotope_names``` and  the isotope name is given by ```solver.isotope_names[isotope_id]```. ```rate``` is the rate of removal in /sec. For instance, ```rate``` is the decay constant of a decay process. ```products``` is a list of integers that corresponds to the IDs of the daughter isotopes. If the product is not known or not monitored, you must set ```products=[-1]```.
+#### ``` solver.preprocess_p_table()```
+Prepares the removal probabilities table.
+#### ``` solver.advance_time_step(w: list)```
+Computes the isotope weights of the current time steps. This method accepts ```w``` as the weights of the previous steps. Then, it computes the isotope weight of the current time steps and updates the values of ```w```.
 
+#### ``` solver.run(w0: list) -> list```
+Runs the simulation. ```w0``` is the initial isotope concentrations. The length of ```w0``` must equals to the total number of isotopes defined via ```solver.add_removal(...)```. Returns a 2D-list representing the isotope concentrations w versus time steps.
 
-
-
-
+![Figure_1](https://user-images.githubusercontent.com/33319386/132009122-79e95a4e-0980-4185-af6e-eaabe323eedc.png)
+![Figure_1](https://user-images.githubusercontent.com/33319386/132009166-35ef7f2f-4293-4f7d-8dbc-a5a322b022ba.png)
