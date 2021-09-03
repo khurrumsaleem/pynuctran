@@ -74,7 +74,9 @@ sim.plot_concentrations(w=final_w, isotopes_to_plot=[0,1,2,3])
 ```
 
 _Sample output_
+
 <img src="https://user-images.githubusercontent.com/33319386/132009122-79e95a4e-0980-4185-af6e-eaabe323eedc.png" width="400">
+
 Sample PYNUCTRAN output using ```solver.plot_concentrations()``` for Lago & Rahnema (2017) benchmark test #3. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004]
 
 
