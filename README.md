@@ -26,7 +26,7 @@ The probability of isotope-i for not being removed from the system is given by
 
 <img src="https://latex.codecogs.com/svg.image?p_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\lambda_{j}\Delta&space;t}" title="p_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
 
-At the beginning of the simulation, each isotope-i has an initial weight, w0(i), which corresponds to its initial concentration. During each time step, t, the weight of its daughter isotopes-k, w(k≠i) (due to all removals defined for isotope-i), is adjusted:
+At the beginning of the simulation, each isotope-i has an initial weight, w0(i), which corresponds to its initial concentration. During each time step, t, the weight of its daughter isotopes-k, w(k≠i) (due to all removals, j, defined for isotope-i), is adjusted:
 
 <img src="https://latex.codecogs.com/svg.image?w^{\(t&plus;1)}_k&space;=&space;w^{\(t)}_k&space;&plus;&space;w^{\(t)}_i&space;p_{ij}" title="w^{\(t+1)}_k = w^{\(t)}_k + w^{\(t)}_i p_{ij}" />
 
