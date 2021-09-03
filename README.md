@@ -1,5 +1,5 @@
 # PyNUCTRAN
-## A Pseudo-Monte Carlo Simulation of Nuclear Transmutation.
+## A Pseudo-Monte Carlo Solver for Nuclear Transmutation Problems.
 
 ### ```pip install pynuctran```
 
