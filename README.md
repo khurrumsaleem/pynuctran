@@ -20,12 +20,19 @@ A transmutation process involves the removal of a nuclide from a system. Then it
 
 The simulation requires the division of time into a regular interval, dt, of N steps. Consider an isotope-i which consists of J(i) removal processes. The probability a removal of isotope-i from a system due to j-th removal process can be derived from Poisson statistics:
 
+<img src="https://latex.codecogs.com/svg.image?p_{il}&space;=&space;\prod_{j=1}^{J_i}\left\{&space;\delta_{lj}&plus;(-1)^{\delta_{lj}}&space;e^{-\lambda_{j}\Delta&space;t}\right\}" title="p_{ij} = \prod_{l=1}^{J_i}\left\{ \delta_{lj}+(-1)^{\delta_{lj}} e^{-\lambda_{l}\Delta t}\right\}" />
 
 The probability of isotope-i for not being removed from the system is given by
 
-At the beginning of the simulation, each isotope-i has an initial weight, w0(i), which corresponds to its initial concentration. During each time step, the weight of its daughter isotopes-k, w(k≠i) (due to all removals defined for isotope-i), is adjusted:
+<img src="https://latex.codecogs.com/svg.image?p_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\lambda_{j}\Delta&space;t}" title="p_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
+
+At the beginning of the simulation, each isotope-i has an initial weight, w0(i), which corresponds to its initial concentration. During each time step, t, the weight of its daughter isotopes-k, w(k≠i) (due to all removals defined for isotope-i), is adjusted:
+
+<img src="https://latex.codecogs.com/svg.image?w^{\(t&plus;1)}_k&space;=&space;w^{\(t)}_k&space;&plus;&space;w^{\(t)}_i&space;p_{ij}" title="w^{\(t+1)}_k = w^{\(t)}_k + w^{\(t)}_i p_{ij}" />
 
 After processing all removal, the weight of isotope-i, w(i) is adjusted,
+
+<img src="https://latex.codecogs.com/svg.image?w^{\(t&plus;1)}_i&space;=&space;w^{\(t)}_i&space;p_{i0}" title="w^{\(t+1)}_i = w^{\(t)}_i p_{i0}" />
 
 These procedures repeat for N steps. Thus, the solution of the associated Bateman's equation can be viewed by plotting w versus the time steps. Note also that this algorithm does not require any random sampling. In essence, one may perceive this method as a Monte Carlo method because it simulates the actual transmutation events during each time step. Therefore, the method is a pseudo-Monte Carlo technique, and its solution is free from random errors. 
 
@@ -77,7 +84,7 @@ _Sample output_
 
 <img src="https://user-images.githubusercontent.com/33319386/132009122-79e95a4e-0980-4185-af6e-eaabe323eedc.png" width="400">
 
-Sample PYNUCTRAN output using ```solver.plot_concentrations()``` for Lago & Rahnema (2017) benchmark test #3. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004]
+Sample PYNUCTRAN output using ```solver.plot_concentrations()``` for Lago & Rahnema (2017) benchmark test #3. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004] The simulation only takes 31ms after running 1000 time steps.
 
 
 ## License (MIT)
