@@ -74,10 +74,8 @@ sim.plot_concentrations(w=final_w, isotopes_to_plot=[0,1,2,3])
 ```
 
 _Sample output_
-
-
-
-Sample PYNUCTRAN output using ```solver.plot_concentrations()``` for Lago & Rahnema (2017) benchmark test #5. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004]
+<img src="https://user-images.githubusercontent.com/33319386/132009122-79e95a4e-0980-4185-af6e-eaabe323eedc.png" width="400">
+Sample PYNUCTRAN output using ```solver.plot_concentrations()``` for Lago & Rahnema (2017) benchmark test #3. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004]
 
 
 ## License (MIT)
@@ -104,5 +102,4 @@ Computes the isotope weights of the current time steps. This method accepts ```w
 #### ``` solver.run(w0: list) -> list```
 Runs the simulation. ```w0``` is the initial isotope concentrations. The length of ```w0``` must equals to the total number of isotopes defined via ```solver.add_removal(...)```. Returns a 2D-list representing the isotope concentrations w versus time steps.
 
-![Figure_1](https://user-images.githubusercontent.com/33319386/132009122-79e95a4e-0980-4185-af6e-eaabe323eedc.png)
-![Figure_1](https://user-images.githubusercontent.com/33319386/132009166-35ef7f2f-4293-4f7d-8dbc-a5a322b022ba.png)
+
