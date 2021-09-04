@@ -53,7 +53,7 @@ At the beginning of the simulation, each isotope-<i>i</i> has an initial weight,
 \
 <img src="https://latex.codecogs.com/svg.image?w^{\(t&plus;1)}_k&space;=&space;w^{\(t)}_k&space;&plus;&space;w^{\(t)}_i&space;p_{ij}" title="w^{\(t+1)}_k = w^{\(t)}_k + w^{\(t)}_i p_{ij}" />
 
-After processing all removal, the weight of isotope-*i*, *w*(*i*) is adjusted,
+After processing all removals, the weight of isotope-*i*, *w*(*i*) is adjusted,
 
 <img src="https://latex.codecogs.com/svg.image?w^{\(t&plus;1)}_i&space;=&space;w^{\(t)}_i&space;p_{i0}" title="w^{\(t+1)}_i = w^{\(t)}_i p_{i0}" />
 
