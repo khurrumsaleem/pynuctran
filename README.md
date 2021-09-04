@@ -29,7 +29,7 @@ To date, there are many numerical depletion solvers available such as CRAM, TTM 
 
 If you don't prefer dealing with complicated mathematical methods to solve Bateman's equations,  give PyNUCTRAN a try!
 
-## Summary of the Stochastic Transmutation Method
+## Summary of the Method
 
 <div align="justify">
 A transmutation process involves the removal of a nuclide from a system. Then it leads to the creation of another daughter nuclide. For instance, the decay of U-238 into Th-234 involves removing U-238 from the system via alpha decay, which in fact mutating the U-238 nucleus into Th-234. In reality, such a transmutation process occur at a certain rate, [lambda]. PyNUCTRAN works by first accumulating the removal parameters from the user. The removal parameters include the rate, parent isotope and the daughter isotope(s). Practically, any number of removals can be added to PyNUCTRAN. Next, PyNUCTRAN prepares the removal probability (RP) table that stores the probability of various transmutation processes to occur. The RP-table boosts the computational speed by substantially reducing flops since the probabilities are pre-calculated before the simulation.
@@ -47,7 +47,7 @@ The probability of isotope-*i* for not being removed from the system is given by
 <img src="https://latex.codecogs.com/svg.image?p_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\lambda_{j}\Delta&space;t}" title="p_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
 
 <div align="justify">
-At the beginning of the simulation, each isotope-<i>i</i> has an initial weight, <i>w0</i>(<i>i</i>), which corresponds to its initial concentration. During each time step, <i>t</i>, the weight of its daughter isotopes-<i>k</i>, <i>w</i>(<i>k≠</i>*) (due to all removals, <i>j</i>, defined for isotope-<i>i</i>), is adjusted:
+At the beginning of the simulation, each isotope-<i>i</i> has an initial weight, <i>w0</i>(<i>i</i>), which corresponds to its initial concentration. During each time step, <i>t</i>, the weight of its daughter isotopes-<i>k</i>, <i>w</i>(<i>k≠i</i>) (due to all removals, <i>j</i>, defined for isotope-<i>i</i>), is adjusted:
 </div>
 
 \
