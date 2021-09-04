@@ -1,5 +1,5 @@
 '''
-A Python Library for Quasi-MC Nuclear Transmutation Solver (PyNUCTRAN)
+A Python Library for Pseudo-MC Nuclear Transmutation Solver (PyNUCTRAN)
 License: MIT
 
 Initially developed, designed and proposed by Dr M. R. Omar for the purpose of 
