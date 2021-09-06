@@ -40,11 +40,15 @@ The simulation requires the division of time into a regular interval, <i>dt</i>,
 </div>
 
 \
-<img src="https://latex.codecogs.com/svg.image?p_{il}&space;=&space;\prod_{j=1}^{J_i}\left\{&space;\delta_{lj}&plus;(-1)^{\delta_{lj}}&space;e^{-\lambda_{j}\Delta&space;t}\right\}" title="p_{ij} = \prod_{l=1}^{J_i}\left\{ \delta_{lj}+(-1)^{\delta_{lj}} e^{-\lambda_{l}\Delta t}\right\}" />
+<img src="https://latex.codecogs.com/svg.image?f_{il}&space;=&space;\prod_{j=1}^{J_i}\left\{&space;\delta_{lj}&plus;(-1)^{\delta_{lj}}&space;e^{-\lambda_{j}\Delta&space;t}\right\}" title="p_{ij} = \prod_{l=1}^{J_i}\left\{ \delta_{lj}+(-1)^{\delta_{lj}} e^{-\lambda_{l}\Delta t}\right\}" />
 
 The probability of isotope-*i* for not being removed from the system is given by
 
-<img src="https://latex.codecogs.com/svg.image?p_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\lambda_{j}\Delta&space;t}" title="p_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
+<img src="https://latex.codecogs.com/svg.image?f_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\lambda_{j}\Delta&space;t}" title="p_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
+
+The probability of removal-*l* to occur is given by (l=0 is for no-removal):
+
+<img src="https://latex.codecogs.com/svg.latex?p_{il}&space;=&space;\frac{f_{il}&space;}{\sum_{j=0}^{J_{i}}f_{ij}}" title="P_{il} = \frac{f_{il} }{\sum_{j=0}^{J_{i}}f_{ij}}" />
 
 <div align="justify">
 At the beginning of the simulation, each isotope-<i>i</i> has an initial weight, <i>w0</i>(<i>i</i>), which corresponds to its initial concentration. During each time step, <i>t</i>, the weight of its daughter isotopes-<i>k</i>, <i>w</i>(<i>k≠i</i>) (due to all removals, <i>j</i>, defined for isotope-<i>i</i>), is adjusted:
