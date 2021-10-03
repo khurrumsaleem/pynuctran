@@ -104,7 +104,7 @@ rows = np.array([0,1,5,6,1,2,2,3,3,4,4,5,6,6,7,7])
 cols = np.array([0,0,0,0,1,1,2,2,3,3,4,5,5,6,6,7])
 A =  csr_matrix((rates,(rows,cols)), shape=(8,8))
 n0 = np.transpose(np.array(w0))
-n_final_cram = CRAM48(A, n0, total_time
+n_final_cram = CRAM48(A, n0, total_time)
 
 # Prints the output of PyNUCTRAN solver and CRAM48, as well as their relative error.
 for i in range(len(isotopes)):
