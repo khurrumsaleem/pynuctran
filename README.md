@@ -105,7 +105,7 @@ sim.add_removal(isotope_index=3, rate=np.log(2)/6.7659494310E+13, products=[-1])
 w0 = [1.0, 0.0, 0.0, 0.0]
 
 # Evaluate the final species concentrations.
-final_w = sim.solve(w0, t=1E+10, steps=10000000000)
+final_w = sim.solve(w0, t=8.64E+4, steps=10000000000)
 
 print(final_w)
 ```
