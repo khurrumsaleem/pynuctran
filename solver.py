@@ -1,57 +1,52 @@
 '''
-A Python Library for Pseudo-MC Nuclear Transmutation Solver (PyNUCTRAN)
+...............................................................................
+A PYTHON LIBRARY FOR NUCLEAR TRANSMUTATION SOLVER (PyNUCTRAN)
 License: MIT
 
-Initially developed, designed and proposed by Dr M. R. Omar for the purpose of 
+Initially developed, designed  and  proposed  by M. R. Omar for the purpose of 
 simulating various nuclear transmutations such as decays,  fissions as well as 
 neutron  absorptions.  PYNUCTRAN was  initially  developed to avoid cumbersome 
 numerical issues of solving the nuclide depletion equations.
 
-This code does not directly solve Bateman's  equations.  Instead, it simulates
-the actual transmutation processes via Poisson statistics.  However, this code 
-does  not  incorporate  pseudo-random number  generations,  thus,  making it a
-"Quasi-Monte Carlo" technique. 
+This code does not directly solve  Bateman's  equations.  Instead, it uses the 
+pi-distribution to  estimate  the  evolution  of  species  concentrations in a 
+nuclide depletion problem. The pi-distribution is given by
 
-The algorithm used is embeded in solver.advance_time_step() method. The pseudo
-code of the algorithm is given as follows:
-                
-define p(i,l) = product(j=1 to J_i) d(j,l) + (-1)**d(j,l) * exp(-lambda(j)*dt)
-**l=0 indicates that p(i,0) is the probability of no removal happens.
+    pi(i,l) = c * product(j=1 to J_i) d(j,l) + (-1)**d(j,l) * exp(-rate(j)*dt)
+
+c is the normalization factor of the distribution.
+pi(i,0) is the probability of no removal happens.
+rate(j) is the rate of transmutation event-j.
+d(j,l) is the kronecker delta.
+dt is the time substep interval.
+
 
 define w as an array consists of the current weight of all isotopes.
 define I as the total number of isotopes
-define e as the precision level, say, 1E-20.
-define J(i) as the total number of removals of isotope-i.
+define J(i) as the total number of transmutation events for isotope-i.
 
-PSEUDO-CODE...................................... COMMENTS....................
+The calculation is based on the following iteration,
 
-routine advance_time_steps(w)
-    input w                                       current weight 
-    for i ... I                                   loop over I isotopes 
-        w[i] < e ? continue for
-        for j ... J[i]                            loop over J removals 
-            for k in K(i,j)                       loop over K products 
-            w[k] = w[k] + w[i] * P(i,j)
-        w[i] = w[i] * P(i,0)
-    return w                                      return advanced weight)
+    w(t) = A^(t/dt) w(0)
 
-end
-..............................................................................
+where w(0) is the initial concentration of all species, A is the transfer matrix 
+which is defined as follows:
+        _                      _
+        |   p(1->1) ... p(I->1)  |
+    A = |     :     '.     :     |
+        |_  p(1->I) ... p(I->I) _|
 
-To iterate over time steps, the following procedure is recommended:
+and p(i->k) is the transfer probability which can be derived using
+pi-distribution using the following formula,
 
-PSEUDO-CODE...................................... COMMENTS ...................
+    p(k->i) = sum of pi(k,j) for all events j that mutates 
+              species k into i.
 
-w = [w0_1, w0_2, ..., w0I]                        assign initial weights
-for t ... total_steps                             loop over time steps
-   w = advance_time_steps(w)
-   
-end
+note also that matrix A  is a square matrix (IxI) with its columns as the parent
+species and rows as the daughter species. Also, w and w(0) are Lx1 column matrix.
 
-..............................................................................
-
-
-Created on 3-09-21.
+.................................................................................
+Created on 3-10-21.
 (c) M. R. Omar, School of Physics, Universiti Sains Malaysia, 11800 Penang, MY.
 
 '''
@@ -61,113 +56,121 @@ import matplotlib.pyplot as plt
 import copy
 import matplotlib.pyplot as plt
 import time              as tm
-
+import decimal           as dc
 class solver:
 
     # shared private constants
     __const_no_product__        = -1
     __const_default_steps__     = 100
-    __const_default_precision__ = 1E-20
-    __const_default_dt__        = 1.0
 
-    def __init__(self, isotope_names: list, 
-                       time_interval: float = __const_default_dt__,
-                       steps        : int   = __const_default_steps__,
-                       precision    : float = __const_default_precision__):
+    def __init__(self, isotope_names: list):
 
-        self.dt            = time_interval
-        self.steps         = steps
         self.isotope_names = isotope_names
         self.__I__         = len(self.isotope_names)
         self.lambdas       = [ []    for i in range(self.__I__)]
         self.G             = [[[-1]] for i in range(self.__I__)]
-        self.__J__         = [  0    for i in range(self.__I__)]
-        self.__K__         = [ []    for i in range(self.__I__)]
         self.P             = [ []    for i in range(self.__I__)]
-        self.presicion = precision
         
     def add_removal(self, isotope_index: int, 
                           rate         : float, 
                           products     : list = [-1]):
+        d_rate = dc.Decimal(rate)
         i = isotope_index
-        self.lambdas[i].append(rate)
+        self.lambdas[i].append(d_rate)
         self.G[i]      .append(products)
-        self.__K__[i]  .append(len(products))
 
-    def preprocess_p_table(self):
+    def prepare_transfer_matrix(self, dt: float, consolidate: bool = False) -> np.ndarray:
 
+        # A list of tuples storing the position of short lived species in the matrix.
+        sl_positions = []
+
+        # Initialize the sparse matrix.
+        A = [ [dc.Decimal(0.0) for i in range(self.__I__)] for i in range(self.__I__)]
         for i in range(self.__I__):
 
-            n_removals = len(self.lambdas[i])
-            # Store J values... add by one to include the no-removal at the 
-            # first element.
-            self.__J__[i] = n_removals + 1
+            # Total number of events. This includes the no-removal event.
+            n_events = len(self.G[i])
 
-            # Compute the probability of no-removal.
-            self.P[i].append(1.0)
-            for l in range(len(self.lambdas[i])):
-                self.P[i][0] *= np.exp(-self.lambdas[i][l]*self.dt)
+            # Initialize the normalization factor, c. Norm is the sum of all probs.
+            norm = dc.Decimal(0.0)
 
             # Compute the probability of removals.
-            for j in range(n_removals):
-                self.P[i].append(1.0)
-                for l in range(n_removals):
-                    kronecker = float(l == j)
-                    self.P[i][j+1] *= kronecker + (-1)**kronecker * \
-                                      np.exp(-self.lambdas[i][l] * self.dt)
+            for j in range(n_events):
+                self.P[i].append(dc.Decimal(1.0))
+                for l in range(1, n_events):
+                    kronecker = dc.Decimal(l == j)
+                    self.P[i][j] = self.P[i][j] * (kronecker + (dc.Decimal(-1))**kronecker * \
+                                      np.exp(-self.lambdas[i][l-1] * dc.Decimal(dt)))
+                norm = norm + self.P[i][j]
 
+            # Construct the sparse transfer matrix.
+            for j in range(n_events):
+                self.P[i][j] = self.P[i][j] / norm
+                for k in self.G[i][j]:
+                    if not k == -1:
+                        A[k][i] += self.P[i][j]
+                        if A[k][i] == dc.Decimal(1.0):
+                            sl_positions.append([k,i])
+                if j == 0:
+                        A[i][i] += self.P[i][j]
 
-    def advance_time_step(self, w: list):
-        # Loop over the isotopes...
-        for i in range(self.__I__):
+        if not consolidate:
+            return np.matrix(A)
 
-            if w[i] < self.presicion:
-                continue
-            
-            # Loop over the removals...
-            for j in range(1, self.__J__[i]):
-                # Loop over the daughters...
-                for k in range(self.__K__[i][j-1]):
-                    # If the number of 
-                    if self.G[i][j][0] != solver.__const_no_product__:
-                        w[self.G[i][j][k]] += w[i] * self.P[i][j]
-            w[i] *= self.P[i][0]
-        return
-    
-    def run(self, w: list):
-        # record the start time.
-        start_time = tm.process_time()
+        # Consolidates short lived species...
+        for pos in sl_positions:
+            A[pos[0]] = [x + y for x, y in zip(A[pos[0]], copy.deepcopy(A[pos[1]]))]
+            A[pos[1]] = [dc.Decimal(0.0) for i in range(self.__I__)]
+            A[pos[0]][pos[1]] = dc.Decimal(0.0)
+        return np.matrix(A)
 
-        w_vs_steps = []
-        w0 = copy.deepcopy(w)
-        w_vs_steps.append(w0)
+    def solve(self, n0, t: float, steps: int, consolidate: bool = False) -> np.ndarray:
+        long_n0 = np.transpose(np.matrix([dc.Decimal(x) for x in n0]))
+        dt = t / steps
+        A = self.prepare_transfer_matrix(dt, consolidate)
+        return np.matmul(np.linalg.matrix_power(A, steps), long_n0)
 
-        for t in range(self.steps):
-            self.advance_time_step(w)
-            w_vs_steps.append(copy.deepcopy(w))
-
-        end_time = tm.process_time()
-        return w_vs_steps, end_time-start_time
-
-
-    def plot_concentrations(self, w                : list, 
-                                  isotopes_to_plot : list, 
-                                  colors           : list = []):
-
-        new_w = np.transpose(np.matrix(w)).tolist()
-
-        for i in range(len(isotopes_to_plot)):
-            if not colors == []:
-                plt.plot(new_w[isotopes_to_plot[i]], colors[i])
-            else:
-                plt.plot(new_w[isotopes_to_plot[i]])
-        names_to_plot =[]
-        for i in isotopes_to_plot:
-            names_to_plot.append(self.isotope_names[i])
-        plt.xlabel('Step')
-        plt.ylabel('Isotope Concentrations')
-        plt.legend(names_to_plot, loc='upper right')
-        plt.show()
-
-        return
-    
+############ OBSOLETE METHOD. THE DIRECT SIMULATION METHOD. #############
+#    def process(self, k, r_w, dw):
+#        for l in range(1, len(self.G[k])):
+#            if self.P[k][l] == dc.Decimal(1.0):
+#                for g in self.G[k][l]:
+#                    self.process(g, r_w, dw)
+#                return     
+#        r_w[k] = r_w[k] + dw
+#        return
+#
+#    def run(self, w_in: list):
+#
+#        w_vs_steps = []
+#
+#        # Prepare the initial weights forall isotopes.
+#        w0 = [dc.Decimal(w_in[i]) for i in range(len(w_in))]
+#        w_vs_steps.append(copy.deepcopy(w0))
+#
+#
+#        # Set the first timestep w to w0
+#        w = copy.deepcopy(w0)
+#        for t in range(self.steps):
+#            
+#            r_w = [dc.Decimal(0.0) for i in range(self.__I__)]
+#
+#            for i in range(self.__I__):
+#                for j in range(len(self.G[i])):
+#                    dw = self.P[i][j] * w[i]
+#                    for g in self.G[i][j]:
+#                        if not g == self.__const_no_product__:
+#                            self.process(g, r_w, dw)
+#                r_w[i] = r_w[i] + self.P[i][0] * w[i]
+#
+#            # Record isotope weights data...
+#            w_vs_steps.append(copy.deepcopy(r_w))
+#
+#            # update w...
+#            w = copy.deepcopy(r_w)
+#
+#
+#        end_time = tm.process_time()
+#        return w_vs_steps
+#
+######### OBSOLETE METHOD. THE DIRECT SIMULATION METHOD. ##############
