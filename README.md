@@ -36,7 +36,8 @@ A transmutation process involves the removal of a nuclide from a system. Then it
 </div>
 
 <div align="justify">
-The simulation requires the division of time into a regular interval, <i>dt</i>, of <i>N</i> steps. Consider an isotope-<i>i</i> which is expecting to experience <i>J<sub>i</sub></i> removal events. The probability a removal event of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics leading to an un-normalized compound Poisson distribution,
+\
+  The simulation requires the division of time into a regular interval, <i>dt</i>, of <i>N</i> steps. Consider an isotope-<i>i</i> which is expecting to experience <i>J<sub>i</sub></i> removal events. The probability a removal event of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics, leading to an un-normalized compound Poisson distribution,
 </div>
 
 \
