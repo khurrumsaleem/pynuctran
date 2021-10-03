@@ -80,6 +80,8 @@ from pynuctran.solver import *
 
 _Running the simulation._
 ```python
+import numpy as np
+
 # Define isotope names.
 iso = ['U235', 'U236','U237', 'Np237']
 # Initialize the solver.
