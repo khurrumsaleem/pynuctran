@@ -36,7 +36,7 @@ A transmutation process involves the removal of a nuclide from a system. Then it
 </div>
 
 <div align="justify">
-The simulation requires the division of time into a regular interval, <i>dt</i>, of <i>N</i> steps. Consider an isotope-<i>i</i> which consists of <i>J</i>(<i>i</i>) removal processes. The probability a removal of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics:
+The simulation requires the division of time into a regular interval, <i>dt</i>, of <i>N</i> steps. Consider an isotope-<i>i</i> which is expecting to experience <i>J<sub>i</sub></i> removal events. The probability a removal event of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics leading to an un-normalized compound Poisson distribution,
 </div>
 
 \
@@ -50,7 +50,7 @@ The normalized probability of removal-*l* to occur is given by (l=0 is for no-re
 
 <img src="https://latex.codecogs.com/svg.latex?\pi_{il}&space;=&space;\frac{\widetilde{\pi}_{il}&space;}{\sum_{j=0}^{J_{i}}\widetilde{\pi}_{ij}}" title="P_{il} = \frac{f_{il} }{\sum_{j=0}^{J_{i}}f_{ij}}" />
 
-At this point, we let <i>I</i> as the total number of species involved in the depletion problem, and we define the transfer matrix as 
+Conveniently, the derived compound Poisson distribution is coined as the π-distribution. At this point, we let <i>I</i> as the total number of species involved in the depletion problem, and we define the transfer matrix as 
 
 <img src="https://latex.codecogs.com/svg.latex?\mathbf{A}&space;=&space;\begin{pmatrix}&space;\pi_{1\rightarrow&space;1}&space;&&space;\cdots&space;&&space;\pi_{I\rightarrow&space;1}&space;\\&space;\vdots&space;&&space;\ddots&space;&&space;\vdots&space;\\&space;\pi_{1\rightarrow&space;I}&space;&&space;\cdots&space;&&space;\pi_{I\rightarrow&space;I}&space;\end{pmatrix}" title="\mathbf{A} = \begin{pmatrix} \pi_{1\rightarrow 1} & \cdots & \pi_{I\rightarrow 1} \\ \vdots & \ddots & \vdots \\ \pi_{1\rightarrow I} & \cdots & \pi_{I\rightarrow I} \end{pmatrix}" />
 
@@ -59,11 +59,13 @@ where π(k→i) is the transfer probability which is defined as
 <img src="https://latex.codecogs.com/svg.latex?\pi_{k&space;\rightarrow&space;i}&space;=&space;\sum_{j\in&space;R}^{}&space;\pi_{kj}" title="\pi_{k \rightarrow i} = \sum_{j\in R}^{} \pi_{kj}" />
 
 <div align="justify">
-Here, R is a set of transmutation events that mutate species k into species i. Note that matrix A is a square matrix (<i>IxI</i>) with its columns as the parent species and the its rows as the daughter species. Now, let <b>w</b>(t) and <b>w</b>(0) be the column matrices representing the final and initial concentration of all species involved, respectively. Then, the final concentrations can be easily evaluated via the exponentiation of matrix A,
+Here, R is a set of transmutation events that mutate species k into species i. Note that matrix A is a square matrix (<i>IxI</i>) with its columns as the parent species and the its rows as the daughter species. Now, let <b>w</b>(t) and <b>w</b>(0) be the column matrices representing the final and initial concentration of all species involved, respectively. Then, the final concentrations can be easily evaluated via,
 </div>
-  
-  
+
+\
 <img src="https://latex.codecogs.com/svg.latex?\mathbf{w}(t)&space;=&space;\mathbf{A}^{t/\Delta&space;t}&space;\mathbf{w}(0)" title="w(t) = \mathbf{A}^{t/\Delta t} w(0)" />
+
+It is important to remark that the matrix power in the above equation can be evaluated efficiently using the binary decomposition method. Thanks to NumPy, the method is implemented in ```numpy.linalg.matrix_power(a,n)```. For non-python users, the matrix power algorithm can be found <a href="https://github.com/numpy/numpy/blob/v1.21.0/numpy/linalg/linalg.py#L553-L666" target=_blank>here</a>.
 
 ## Some Python Examples
 
@@ -100,15 +102,9 @@ sim.add_removal(isotope_id=3, rate=np.log(2)/6.7659494310E+13, [-1])
 # Assign the initial weight of all isotopes. The length of w0 is equal to the number of isotopes being monitored.
 w0 = [1.0, 0.0, 0.0, 0.0]
 
-# Run the simulation.
-final_w = sim.solve(w0, 1E+10, 10000000000)
+# Evaluate the final species concentrations.
+final_w = sim.solve(w0, total_time=1E+10, steps=10000000000)
 ```
-_Sample output_
-
-<img src="https://user-images.githubusercontent.com/33319386/132084062-98c99308-8e0e-49d9-a03d-1ce12b9a80a6.PNG" width="400"><img src="https://user-images.githubusercontent.com/33319386/132084073-abc31b3a-39dd-4491-920f-e27dd1d77d06.png" width="400">
-
-Sample PYNUCTRAN output for Lago & Rahnema (2017) benchmark test #4. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004] The simulation only takes 31ms after running 1000 time steps.
-
 
 ## License (MIT)
 
