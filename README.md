@@ -112,13 +112,7 @@ Sample PYNUCTRAN output for Lago & Rahnema (2017) benchmark test #4. [doi: http:
 
 ## License (MIT)
 
-<div align="justify">
-Permission is hereby granted,  free of charge,  to any person  obtaining  a copy of  PyNUCTRAN and associated documentation files (the "Code"), to deal in the Library without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Code, and to permit persons to whom the Library is furnished to do so,  subject to the following conditions:
-
-The  above  copyright  notice  and  this permission notice  shall  be  included  in  all copies or substantial portions of the Software.
-
-THE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  OR IMPLIED, INCLUDING  BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT  SHALL  THE AUTHORS  OR COPYRIGHT  HOLDERS  BE LIABLE FOR ANY CLAIM,  DAMAGES OR  OTHER LIABILITY,  WHETHER  IN  AN  ACTION  OF CONTRACT,  TORT  OR OTHERWISE,  ARISING FROM,  OUT OF OR IN CONNECTION WITH THE CODE OR THE USE OR OTHER DEALINGS IN THE CODE.
-</div>
+PyNUCTRAN is distributed under the MIT license.
 
 ## Library Documentation
 
