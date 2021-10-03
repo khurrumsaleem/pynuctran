@@ -22,7 +22,7 @@ To date, there are many numerical depletion solvers available such as CRAM, TTM 
 
 ## Features
 
-- Friendly to all physicists! In order to understand the method implemented in PyNUCTRAN, you only need to know Poisson distribution and matrix multiplications! Free from math jargons, hard-to-understand algorithms and approximations.
+- Friendly to all physicists! In order to understand the method implemented in PyNUCTRAN, you only need to know <a href="https://en.wikipedia.org/wiki/Poisson_distribution" target=_blank>Poisson distribution</a> and <a href="https://en.wikipedia.org/wiki/Matrix_multiplication" target=_blank>matrix multiplications</a>! Free from math jargons, hard-to-understand algorithms and approximations.
 - Capable of simulating complex transmutation chains.
 - PyNUCTRAN simulates the actual transmutations processes without losing the accuracy of the computation.
 - Helps nuclear physics students to understands transmutation processes through simulations. They can create, study and design any depletion chains and simulate the transmutations.
