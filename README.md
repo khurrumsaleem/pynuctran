@@ -1,5 +1,5 @@
 # PyNUCTRAN
-## A Pseudo-Monte Carlo Solver for Nuclear Depletion Problems.
+## A Solver for Nuclear Transmutation Problems.
 
 ### ```pip install pynuctran```
 <div align="justify">
