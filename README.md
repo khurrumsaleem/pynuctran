@@ -102,12 +102,12 @@ w0 = [1.0, 0.0, 0.0, 0.0]
 
 # Run the simulation.
 final_w = sim.solve(w0, 1E+10, 10000000000)
-
+```
 _Sample output_
 
 <img src="https://user-images.githubusercontent.com/33319386/132084062-98c99308-8e0e-49d9-a03d-1ce12b9a80a6.PNG" width="400"><img src="https://user-images.githubusercontent.com/33319386/132084073-abc31b3a-39dd-4491-920f-e27dd1d77d06.png" width="400">
 
-Sample PYNUCTRAN output using ```solver.plot_concentrations()``` for Lago & Rahnema (2017) benchmark test #4. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004] The simulation only takes 31ms after running 1000 time steps.
+Sample PYNUCTRAN output for Lago & Rahnema (2017) benchmark test #4. [doi: http://dx.doi.org/10.1016/j.anucene.2016.09.004] The simulation only takes 31ms after running 1000 time steps.
 
 
 ## License (MIT)
