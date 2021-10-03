@@ -7,7 +7,7 @@
   
   Time step: 2.84E+4 (2 days).
   No. of sub-steps, t/dt: 1E+20.
-  
+   
 """
 
 from pynuctran.solver import *
