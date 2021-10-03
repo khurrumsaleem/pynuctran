@@ -121,9 +121,9 @@ Before reading this section, you must have the basic idea of object-oriented pro
 
 #### ``` solver.solver(isotope_names: list) ```
 Initializes the solver. ```isotope_names``` is a list of isotope names involved in the simulation. An isotope ID corresponds to the index of ```isotope_names```.  
-#### ``` solver.add_removal(isotope_id: int, rate: float, products: list)```
+#### ``` solver.add_removal(isotope_index: int, rate: float, products: list)```
 Defines and adds a new removal process. ```isotope_id``` is the integer ID of the isotope subjected to the removal (the parent isotope). The ID corresponds to the index of ```isotope_names``` and  the isotope name is given by ```solver.isotope_names[isotope_id]```. ```rate``` is the rate of removal in /sec. For instance, ```rate``` is the decay constant of a decay process. ```products``` is a list of integers that corresponds to the IDs of the daughter isotopes. If the product is not known or not monitored, you must set ```products=[-1]```.
-#### ``` solver.solve(w0: list, t: float, substeps: int) -> list```
+#### ``` solver.solve(w0: list, t: float, steps: int) -> numpy.ndarray```
 Runs the simulation. ```w0``` is the initial isotope concentrations. The length of ```w0``` must equals to the total number of isotopes defined via ```solver.add_removal(...)```. Returns a column matrix representing the isotope concentrations w.
 
 
