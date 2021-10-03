@@ -81,29 +81,31 @@ from pynuctran.solver import *
 _Running the simulation._
 ```python
 # Define isotope names.
-iso_names = ['U235', 'U236','U237', 'Np237']
+iso = ['U235', 'U236','U237', 'Np237']
 # Initialize the solver.
 sim = solver(isotope_names=iso)
 
 # Add the removal processes for U235...
 # U-235 decay: isotope_id=0 since it is the first iso_names element ...
 # products=[-1] indicates the code should not monitor the daugther isotopes. The rate must be in per second.
-sim.add_removal(isotope_id=0, rate=np.log(2)/2.2210238880E+16, products=[-1])
+sim.add_removal(isotope_index=0, rate=np.log(2)/2.2210238880E+16, products=[-1])
 # U-235 neutron absorptions.
-sim.add_removal(isotope_id=0, rate=1E-4, products=[1])
+sim.add_removal(isotope_index=0, rate=1E-4, products=[1])
 
 # Add the removal processes for U236, U237 and so on...
-sim.add_removal(isotope_id=1, rate=np.log(2)/7.390789920E+14, [-1])
-sim.add_removal(isotope_id=1, rate=1E-4, [2])
-sim.add_removal(isotope_id=2, rate=np.log(2)/5.8320E+05, [3])
-sim.add_removal(isotope_id=3, rate=np.log(2)/6.7659494310E+13, [-1])
+sim.add_removal(isotope_index=1, rate=np.log(2)/7.390789920E+14, products=[-1])
+sim.add_removal(isotope_index=1, rate=1E-4, products=[2])
+sim.add_removal(isotope_index=2, rate=np.log(2)/5.8320E+05, products=[3])
+sim.add_removal(isotope_index=3, rate=np.log(2)/6.7659494310E+13, products=[-1])
 
 
 # Assign the initial weight of all isotopes. The length of w0 is equal to the number of isotopes being monitored.
 w0 = [1.0, 0.0, 0.0, 0.0]
 
 # Evaluate the final species concentrations.
-final_w = sim.solve(w0, total_time=1E+10, steps=10000000000)
+final_w = sim.solve(w0, t=1E+10, steps=10000000000)
+
+print(final_w)
 ```
 
 ## License (MIT)
