@@ -40,32 +40,30 @@ The simulation requires the division of time into a regular interval, <i>dt</i>,
 </div>
 
 \
-<img src="https://latex.codecogs.com/svg.image?f_{il}&space;=&space;\prod_{j=1}^{J_i}\left\{&space;\delta_{lj}&plus;(-1)^{\delta_{lj}}&space;e^{-\lambda_{j}\Delta&space;t}\right\}" title="p_{ij} = \prod_{l=1}^{J_i}\left\{ \delta_{lj}+(-1)^{\delta_{lj}} e^{-\lambda_{l}\Delta t}\right\}" />
+<img src="https://latex.codecogs.com/svg.image?\pi_{il}&space;=&space;\prod_{j=1}^{J_i}\left\{&space;\delta_{lj}&plus;(-1)^{\delta_{lj}}&space;e^{-\lambda_{j}\Delta&space;t}\right\}" title="\pi_{ij} = \prod_{l=1}^{J_i}\left\{ \delta_{lj}+(-1)^{\delta_{lj}} e^{-\lambda_{l}\Delta t}\right\}" />
 
 The probability of isotope-*i* for not being removed from the system is given by
 
-<img src="https://latex.codecogs.com/svg.image?f_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\lambda_{j}\Delta&space;t}" title="p_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
+<img src="https://latex.codecogs.com/svg.image?\pi_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\lambda_{j}\Delta&space;t}" title="\pi_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
 
 The probability of removal-*l* to occur is given by (l=0 is for no-removal):
 
-<img src="https://latex.codecogs.com/svg.latex?p_{il}&space;=&space;\frac{f_{il}&space;}{\sum_{j=0}^{J_{i}}f_{ij}}" title="P_{il} = \frac{f_{il} }{\sum_{j=0}^{J_{i}}f_{ij}}" />
+<img src="https://latex.codecogs.com/svg.latex?p_{il}&space;=&space;\frac{\pi_{il}&space;}{\sum_{j=0}^{J_{i}}\pi_{ij}}" title="P_{il} = \frac{f_{il} }{\sum_{j=0}^{J_{i}}f_{ij}}" />
+
+At this point, we let I as the total number of species involved in the depletion problem, and we define the transfer matrix as 
+
+<img src="https://latex.codecogs.com/svg.latex?\mathbf{A}&space;=&space;\begin{pmatrix}&space;\pi_{1\rightarrow&space;1}&space;&&space;\cdots&space;&&space;\pi_{I\rightarrow&space;1}&space;\\&space;\vdots&space;&&space;\ddots&space;&&space;\vdots&space;\\&space;\pi_{1\rightarrow&space;I}&space;&&space;\cdots&space;&&space;\pi_{I\rightarrow&space;I}&space;\end{pmatrix}" title="\mathbf{A} = \begin{pmatrix} \pi_{1\rightarrow 1} & \cdots & \pi_{I\rightarrow 1} \\ \vdots & \ddots & \vdots \\ \pi_{1\rightarrow I} & \cdots & \pi_{I\rightarrow I} \end{pmatrix}" />
+
+where π(k→i) is the transfer probability which is defined as
+
+<img src="https://latex.codecogs.com/svg.latex?\pi_{k&space;\rightarrow&space;i}&space;=&space;\sum_{j\in&space;R}^{}&space;\pi_j" title="\pi_{k \rightarrow i} = \sum_{j\in R}^{} \pi_j" />
 
 <div align="justify">
-At the beginning of the simulation, each isotope-<i>i</i> has an initial weight, <i>w0</i>(<i>i</i>), which corresponds to its initial concentration. During each time step, <i>t</i>, the weight of its daughter isotopes-<i>k</i>, <i>w</i>(<i>k≠i</i>) (due to all removals, <i>j</i>, defined for isotope-<i>i</i>), is adjusted:
+Here, R is a set of transmutation events that mutates species k into species i. Note that matrix A is a square matrix (IxI) with its columns as the parent species and the its rows as the daughter species. Now, let w(t) and w(0) be the column matrices representing the final and initial concentration of all species involved, respectively. Then, the final concentrations can be easily evaluated via the exponentiation of matrix A,
 </div>
-
-\
-<img src="https://latex.codecogs.com/svg.image?w^{\(t&plus;1)}_k&space;=&space;w^{\(t)}_k&space;&plus;&space;w^{\(t)}_i&space;p_{ij}" title="w^{\(t+1)}_k = w^{\(t)}_k + w^{\(t)}_i p_{ij}" />
-
-After processing all removals, the weight of isotope-*i*, *w*(*i*) is adjusted,
-
-<img src="https://latex.codecogs.com/svg.image?w^{\(t&plus;1)}_i&space;=&space;w^{\(t)}_i&space;p_{i0}" title="w^{\(t+1)}_i = w^{\(t)}_i p_{i0}" />
-
-
-<div align="justify">
-These procedures repeat for <i>N</i> steps. Thus, the solution of the associated Bateman's equation can be viewed by plotting <i>w</i> versus the time steps. Note also that this algorithm does not require any random sampling. In essence, one may perceive this method as a Monte Carlo method because it is doing a faithful simulation of the actual transmutation events. Therefore, the method is a pseudo-Monte Carlo technique, and its solution is free from random errors. 
-</div>
-
+  
+  
+<img src="https://latex.codecogs.com/svg.latex?w(t)&space;=&space;\mathbf{A}^{t/\Delta&space;t}&space;w(0)" title="w(t) = \mathbf{A}^{t/\Delta t} w(0)" />
 
 ## Some Python Examples
 
@@ -83,7 +81,7 @@ _Running the simulation._
 # Define isotope names.
 iso_names = ['U235', 'U236','U237', 'Np237']
 # Initialize the solver.
-sim = solver(isotope_names=iso, time_interval=86.4, steps=1000)
+sim = solver(isotope_names=iso)
 
 # Add the removal processes for U235...
 # U-235 decay: isotope_id=0 since it is the first iso_names element ...
@@ -98,18 +96,12 @@ sim.add_removal(isotope_id=1, rate=1E-4, [2])
 sim.add_removal(isotope_id=2, rate=np.log(2)/5.8320E+05, [3])
 sim.add_removal(isotope_id=3, rate=np.log(2)/6.7659494310E+13, [-1])
 
-# Prepare the RP-table (removal probability table)
-sim.preprocess_p_table()
 
 # Assign the initial weight of all isotopes. The length of w0 is equal to the number of isotopes being monitored.
 w0 = [1.0, 0.0, 0.0, 0.0]
 
 # Run the simulation.
-final_w = sim.run(w0)
-
-# Plot the concentrations of all isotopes.
-sim.plot_concentrations(w=final_w, isotopes_to_plot=[0,1,2,3])
-```
+final_w = sim.solve(w0, 1E+10, 10000000000)
 
 _Sample output_
 
@@ -135,16 +127,11 @@ Before reading this section, you must have the basic idea of object-oriented pro
 </div>
 
 
-#### ``` solver.solver(isotope_names: list, time_interval: float = 1.0, steps: int = 100, precision: float = 1E-20) ```
-Initializes the solver. ```isotope_names``` is a list of isotope names involved in the simulation. An isotope ID corresponds to the index of ```isotope_names```. ```time_interval``` is the interval of between time steps (in seconds). ```steps``` is the total number of time steps to simulate and ``` precision``` is the tolerance value of isotope weights. Here, if an isotope weight falls below ```precision```, then PyNUCTRAN will stop updating the weight during the next time step (unless its weight increases to a value greater than ```precision``` at later times; for this case, PyNUCTRAN will re-monitor the isotope). 
+#### ``` solver.solver(isotope_names: list) ```
+Initializes the solver. ```isotope_names``` is a list of isotope names involved in the simulation. An isotope ID corresponds to the index of ```isotope_names```.  
 #### ``` solver.add_removal(isotope_id: int, rate: float, products: list)```
 Defines and adds a new removal process. ```isotope_id``` is the integer ID of the isotope subjected to the removal (the parent isotope). The ID corresponds to the index of ```isotope_names``` and  the isotope name is given by ```solver.isotope_names[isotope_id]```. ```rate``` is the rate of removal in /sec. For instance, ```rate``` is the decay constant of a decay process. ```products``` is a list of integers that corresponds to the IDs of the daughter isotopes. If the product is not known or not monitored, you must set ```products=[-1]```.
-#### ``` solver.preprocess_p_table()```
-Prepares the removal probabilities table.
-#### ``` solver.advance_time_step(w: list)```
-Computes the isotope weights of the current time steps. This method accepts ```w``` as the weights of the previous steps. Then, it computes the isotope weight of the current time steps and updates the values of ```w```.
-
-#### ``` solver.run(w0: list) -> list```
-Runs the simulation. ```w0``` is the initial isotope concentrations. The length of ```w0``` must equals to the total number of isotopes defined via ```solver.add_removal(...)```. Returns a 2D-list representing the isotope concentrations w versus time steps.
+#### ``` solver.solve(w0: list, t: float, substeps: int) -> list```
+Runs the simulation. ```w0``` is the initial isotope concentrations. The length of ```w0``` must equals to the total number of isotopes defined via ```solver.add_removal(...)```. Returns a column matrix representing the isotope concentrations w.
 
 
