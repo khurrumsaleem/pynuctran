@@ -59,7 +59,7 @@ where π(k→i) is the transfer probability which is defined as
 <img src="https://latex.codecogs.com/svg.latex?\pi_{k&space;\rightarrow&space;i}&space;=&space;\sum_{j\in&space;R}^{}&space;\pi_{kj}" title="\pi_{k \rightarrow i} = \sum_{j\in R}^{} \pi_{kj}" />
 
 <div align="justify">
-Here, R is a set of transmutation events that mutates species k into species i. Note that matrix A is a square matrix (<i>IxI</i>) with its columns as the parent species and the its rows as the daughter species. Now, let <b>w</b>(t) and <b>w</b>(0) be the column matrices representing the final and initial concentration of all species involved, respectively. Then, the final concentrations can be easily evaluated via the exponentiation of matrix A,
+Here, R is a set of transmutation events that mutate species k into species i. Note that matrix A is a square matrix (<i>IxI</i>) with its columns as the parent species and the its rows as the daughter species. Now, let <b>w</b>(t) and <b>w</b>(0) be the column matrices representing the final and initial concentration of all species involved, respectively. Then, the final concentrations can be easily evaluated via the exponentiation of matrix A,
 </div>
   
   
