@@ -25,7 +25,6 @@ To date, there are many numerical depletion solvers available such as CRAM, TTM 
 - Friendly to all physicists! In order to understand the method implemented in PyNUCTRAN, you only need to know Poisson distribution and matrix multiplications! Free from math jargons, hard-to-understand algorithms and approximations.
 - Capable of simulating complex transmutation chains.
 - PyNUCTRAN simulates the actual transmutations processes without losing the accuracy of the computation.
-- Create a plot of various isotope concentrations.
 - Helps nuclear physics students to understands transmutation processes through simulations. They can create, study and design any depletion chains and simulate the transmutations.
 
 If you don't prefer dealing with complicated mathematical methods to solve Bateman's equations,  give PyNUCTRAN a try!
