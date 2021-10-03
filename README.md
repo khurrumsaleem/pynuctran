@@ -40,30 +40,30 @@ The simulation requires the division of time into a regular interval, <i>dt</i>,
 </div>
 
 \
-<img src="https://latex.codecogs.com/svg.image?\pi_{il}&space;=&space;\prod_{j=1}^{J_i}\left\{&space;\delta_{lj}&plus;(-1)^{\delta_{lj}}&space;e^{-\lambda_{j}\Delta&space;t}\right\}" title="\pi_{ij} = \prod_{l=1}^{J_i}\left\{ \delta_{lj}+(-1)^{\delta_{lj}} e^{-\lambda_{l}\Delta t}\right\}" />
+<img src="https://latex.codecogs.com/svg.image?\widetilde{\pi}_{il}&space;=&space;\prod_{j=1}^{J_i}\left\{&space;\delta_{lj}&plus;(-1)^{\delta_{lj}}&space;e^{-\lambda_{j}\Delta&space;t}\right\}" title="\pi_{ij} = \prod_{l=1}^{J_i}\left\{ \delta_{lj}+(-1)^{\delta_{lj}} e^{-\lambda_{l}\Delta t}\right\}" />
 
 The probability of isotope-*i* for not being removed from the system is given by
 
-<img src="https://latex.codecogs.com/svg.image?\pi_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\lambda_{j}\Delta&space;t}" title="\pi_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
+<img src="https://latex.codecogs.com/svg.image?\widetilde{\pi}_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\lambda_{j}\Delta&space;t}" title="\pi_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
 
-The probability of removal-*l* to occur is given by (l=0 is for no-removal):
+The normalized probability of removal-*l* to occur is given by (l=0 is for no-removal):
 
-<img src="https://latex.codecogs.com/svg.latex?p_{il}&space;=&space;\frac{\pi_{il}&space;}{\sum_{j=0}^{J_{i}}\pi_{ij}}" title="P_{il} = \frac{f_{il} }{\sum_{j=0}^{J_{i}}f_{ij}}" />
+<img src="https://latex.codecogs.com/svg.latex?\pi_{il}&space;=&space;\frac{\widetilde{\pi}_{il}&space;}{\sum_{j=0}^{J_{i}}\widetilde{\pi}_{ij}}" title="P_{il} = \frac{f_{il} }{\sum_{j=0}^{J_{i}}f_{ij}}" />
 
-At this point, we let I as the total number of species involved in the depletion problem, and we define the transfer matrix as 
+At this point, we let <i>I</i> as the total number of species involved in the depletion problem, and we define the transfer matrix as 
 
 <img src="https://latex.codecogs.com/svg.latex?\mathbf{A}&space;=&space;\begin{pmatrix}&space;\pi_{1\rightarrow&space;1}&space;&&space;\cdots&space;&&space;\pi_{I\rightarrow&space;1}&space;\\&space;\vdots&space;&&space;\ddots&space;&&space;\vdots&space;\\&space;\pi_{1\rightarrow&space;I}&space;&&space;\cdots&space;&&space;\pi_{I\rightarrow&space;I}&space;\end{pmatrix}" title="\mathbf{A} = \begin{pmatrix} \pi_{1\rightarrow 1} & \cdots & \pi_{I\rightarrow 1} \\ \vdots & \ddots & \vdots \\ \pi_{1\rightarrow I} & \cdots & \pi_{I\rightarrow I} \end{pmatrix}" />
 
 where π(k→i) is the transfer probability which is defined as
 
-<img src="https://latex.codecogs.com/svg.latex?\pi_{k&space;\rightarrow&space;i}&space;=&space;\sum_{j\in&space;R}^{}&space;\pi_j" title="\pi_{k \rightarrow i} = \sum_{j\in R}^{} \pi_j" />
+<img src="https://latex.codecogs.com/svg.latex?\pi_{k&space;\rightarrow&space;i}&space;=&space;\sum_{j\in&space;R}^{}&space;\pi_j" title="\pi_{k \rightarrow i} = \sum_{j\in R}^{} \pi_{kj}" />
 
 <div align="justify">
-Here, R is a set of transmutation events that mutates species k into species i. Note that matrix A is a square matrix (IxI) with its columns as the parent species and the its rows as the daughter species. Now, let w(t) and w(0) be the column matrices representing the final and initial concentration of all species involved, respectively. Then, the final concentrations can be easily evaluated via the exponentiation of matrix A,
+Here, R is a set of transmutation events that mutates species k into species i. Note that matrix A is a square matrix (<i>IxI</i>) with its columns as the parent species and the its rows as the daughter species. Now, let <b>w</b>(t) and <b>w</b>(0) be the column matrices representing the final and initial concentration of all species involved, respectively. Then, the final concentrations can be easily evaluated via the exponentiation of matrix A,
 </div>
   
   
-<img src="https://latex.codecogs.com/svg.latex?w(t)&space;=&space;\mathbf{A}^{t/\Delta&space;t}&space;w(0)" title="w(t) = \mathbf{A}^{t/\Delta t} w(0)" />
+<img src="https://latex.codecogs.com/svg.latex?\mathbf{w}(t)&space;=&space;\mathbf{A}^{t/\Delta&space;t}&space;\mathbf{w}(0)" title="w(t) = \mathbf{A}^{t/\Delta t} w(0)" />
 
 ## Some Python Examples
 
