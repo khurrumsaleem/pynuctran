@@ -80,31 +80,9 @@ n_final = sim.solve(w0,total_time,steps)
 # https://github.com/mit-crpg/opendeplete/blob/master/opendeplete/integrator/cram.py
 #------------------------------------------------------------------------------------
 
-# Construct the transmutation matrix.
-rates = np.array([
-    -hl[0]-1E-4-1E-5,
-    +1E-4,
-    +1E-5*(0.013157),
-    +1E-5*(1.11541594E-04),
-    -hl[1],
-    +hl[1],
-    -hl[2],
-    +hl[2],
-    -hl[3]-1E-5,
-    +1E-5,
-    -hl[4],
-    -hl[5],
-    +hl[5],
-    -hl[6],
-    +hl[6],
-    -hl[7]
-              ])
-
-rows = np.array([0,1,5,6,1,2,2,3,3,4,4,5,6,6,7,7])
-cols = np.array([0,0,0,0,1,1,2,2,3,3,4,5,5,6,6,7])
-A =  csr_matrix((rates,(rows,cols)), shape=(8,8))
+A = sim.prepare_transmutation_matrix()
 n0 = np.transpose(np.array(w0))
-n_final_cram = CRAM48(A, n0, total_time)
+n_final_cram = CRAM48(A,n0,total_time)
 
 # Prints the output of PyNUCTRAN solver and CRAM48, as well as their relative error.
 for i in range(len(isotopes)):
