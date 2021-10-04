@@ -63,37 +63,8 @@ n_final = sim.solve(w0,total_time,steps)
 # https://github.com/mit-crpg/opendeplete/blob/master/opendeplete/integrator/cram.py
 #------------------------------------------------------------------------------------
 
-# Build the transmutation matrix. In CRAM texts, this matrix is A.
-rates = np.array([
-    -hl[0]-1E-4,
-    1E-4,
-    -hl[1],
-    hl[1],
-    -hl[2],
-    hl[2],
-    -hl[3]-1E-4,
-    1E-4,
-    -hl[4]-1E-4,
-    1E-4,
-    -hl[5]-1E-4,
-    1E-4,
-    hl[5],
-    -hl[6]-1E-4,
-    1E-4,
-    -hl[7],
-    hl[7],
-    -hl[8],
-    -hl[9]-1E-4,
-    1E-4,
-    -hl[10],
-    hl[10],
-    hl[11],
-    -hl[11]
-])
 
-rows = np.array([0,1,1,2,2,3,3,4,4,5,5,6,8,6,7,7,9,8,9,10,10,11,4,11])
-cols = np.array([0,0,1,1,2,2,3,3,4,4,5,5,5,6,6,7,7,8,9,9,10,10,11,11])
-A = csr_matrix((rates,(rows,cols)), shape=(12,12))
+A = sim.prepare_transmutation_matrix()
 n0 = np.transpose(np.array(w0))
 n_final_cram = CRAM48(A,n0,total_time)
 
