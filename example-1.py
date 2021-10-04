@@ -12,7 +12,6 @@
 
 from pynuctran.solver import *
 import numpy as np
-from scipy.sparse.csr import csr_matrix
 
 isotopes = [ 'U-238','U-239','Np-239',
              'Pu-239','Pu-240','Pu-241',
@@ -62,7 +61,6 @@ n_final = sim.solve(w0,total_time,steps)
 # The CRAM solver can be obtained from MIT's CRPG codes repository:
 # https://github.com/mit-crpg/opendeplete/blob/master/opendeplete/integrator/cram.py
 #------------------------------------------------------------------------------------
-
 
 A = sim.prepare_transmutation_matrix()
 n0 = np.transpose(np.array(w0))
