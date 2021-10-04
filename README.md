@@ -37,7 +37,7 @@ A transmutation process involves the removal of a nuclide from a system. Then it
 </div>
 
 <div align="justify">
-  The simulation requires the division of time into <i>N</i> regular substeps, and the substep interval is <i>dt</i>. Consider an isotope-<i>i</i> which is expecting to experience <i>J<sub>i</sub></i> removal events. For example, U-235 may experience absorption, fission and decay events, so, there are <i>J<sub>i</sub></i>=3 removal events. The removal probability (or probability of a removal event to occur) of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics, leading to an un-normalized compound Poisson distribution (later known as π-distribution),
+  The simulation requires the division of time into <i>N</i> regular substeps, and the substep interval is <i>dt</i>. Consider an isotope-<i>i</i> which is expecting to experience <i>J<sub>i</sub></i> removal events. For example, U-235 may experience absorption, fission and decay events, so, there are <i>J<sub>i</sub></i>=3 removal events. The removal probability (or probability of a removal event to occur) of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics, leading to an un-normalized joint Poisson distribution (later known as π-distribution),
 </div>
 
 \
@@ -51,7 +51,7 @@ The normalized probability of removal-*l* to occur is given by (l=0 is for no-re
 
 <img src="https://latex.codecogs.com/svg.latex?\pi_{il}&space;=&space;\frac{\widetilde{\pi}_{il}&space;}{\sum_{j=0}^{J_{i}}\widetilde{\pi}_{ij}}" title="P_{il} = \frac{f_{il} }{\sum_{j=0}^{J_{i}}f_{ij}}" />
 
-Conveniently, the derived compound Poisson distribution is coined as the π-distribution. At this point, we let <i>I</i> as the total number of species involved in the depletion problem, and we define the transfer matrix as 
+Conveniently, the derived joint Poisson distribution is coined as the π-distribution. At this point, we let <i>I</i> as the total number of species involved in the depletion problem, and we define the transfer matrix as 
 
 <img src="https://latex.codecogs.com/svg.latex?\mathbf{A}&space;=&space;\begin{pmatrix}&space;\pi_{1\rightarrow&space;1}&space;&&space;\cdots&space;&&space;\pi_{I\rightarrow&space;1}&space;\\&space;\vdots&space;&&space;\ddots&space;&&space;\vdots&space;\\&space;\pi_{1\rightarrow&space;I}&space;&&space;\cdots&space;&&space;\pi_{I\rightarrow&space;I}&space;\end{pmatrix}" title="\mathbf{A} = \begin{pmatrix} \pi_{1\rightarrow 1} & \cdots & \pi_{I\rightarrow 1} \\ \vdots & \ddots & \vdots \\ \pi_{1\rightarrow I} & \cdots & \pi_{I\rightarrow I} \end{pmatrix}" />
 
@@ -106,7 +106,7 @@ Also, the probability of zero-chance of event-<i>j</i> to occur is given by,
 
 
 <div align="justify">
-So far, we have established the event probability of a single event. Recall that an isotope species can be associated with more than one transmutation events, <i>j</i>∈{0,1,2,…,<i>J<sub>i</sub></i>}. For simplicity, let E<sub>1</sub> be the condition where event-<i>l</i>, <i>l</i>∈{0,1,2,…,<i>J<sub>i</sub></i>}, is occurring, and E<sub>2</sub> be a condition where all events except removal event-<i>l</i> are not occurring. The compound probability of both E<sub>1</sub> and E<sub>2</sub> are true is given by,
+So far, we have established the event probability of a single event. Recall that an isotope species can be associated with more than one transmutation events, <i>j</i>∈{0,1,2,…,<i>J<sub>i</sub></i>}. For simplicity, let E<sub>1</sub> be the condition where event-<i>l</i>, <i>l</i>∈{0,1,2,…,<i>J<sub>i</sub></i>}, is occurring, and E<sub>2</sub> be a condition where all events except removal event-<i>l</i> are not occurring. The joint probability of both E<sub>1</sub> and E<sub>2</sub> are true is given by,
 </div>
 
 \
@@ -120,7 +120,7 @@ The probability of no-removal, <i>l</i>=0 is given by the product of zero-chance
 
 <img src="https://latex.codecogs.com/svg.latex?\widetilde{\pi}_{i0}&space;=&space;\prod_{\forall&space;l}^{}&space;e^{-\Lambda_{il}&space;\Delta&space;t}" title="\widetilde{\pi}_{il} = \prod_{\forall l}^{} e^{-\Lambda_l \Delta t}" />
 
-Therefore, the normalized compound Poisson distribution can be formally written as,
+Therefore, the normalized joint Poisson distribution can be formally written as,
 
 
 <img src="https://latex.codecogs.com/svg.latex?\pi_{il}&space;\equiv&space;\pi_i(l;&space;\Lambda_1,&space;...,&space;\Lambda_{J_i})&space;=&space;c_i&space;\prod_{j=1}^{J_i}&space;\left&space;(&space;\delta_{jl}&space;&plus;&space;\left&space;(&space;-1&space;\right&space;)^{\delta_{jl}}&space;e^{-\Lambda_j&space;\Delta&space;t}&space;\right&space;)" title="\pi_{il} \equiv \pi_i(l; \Lambda_1, ..., \Lambda_{J_i}) = c_i \prod_{j=1}^{J_i} \left ( \delta_{jl} + \left ( -1 \right )^{\delta_{jl}} e^{-\Lambda_j \Delta t} \right )" />
