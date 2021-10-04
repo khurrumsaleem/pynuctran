@@ -37,7 +37,7 @@ A transmutation process involves the removal of a nuclide from a system. Then it
 </div>
 
 <div align="justify">
-  The simulation requires the division of time into <i>N</i> regular substeps, and the substep interval is <i>dt</i>. Consider an isotope-<i>i</i> which is expecting to experience <i>J<sub>i</sub></i> removal events. For example, U-235 may experience absorption, fission and decay events, and these are considered as removal events. The probability a removal event of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics, leading to an un-normalized compound Poisson distribution (later known as π-distribution),
+  The simulation requires the division of time into <i>N</i> regular substeps, and the substep interval is <i>dt</i>. Consider an isotope-<i>i</i> which is expecting to experience <i>J<sub>i</sub></i> removal events. For example, U-235 may experience absorption, fission and decay events, so, there are <i>J<sub>i</sub></i>=3 removal events. The probability a removal event of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics, leading to an un-normalized compound Poisson distribution (later known as π-distribution),
 </div>
 
 \
