@@ -41,7 +41,7 @@ hl = [
 ]
 
 #---------------------------- BUILD THE DEPLETION SCHEME.
-sim = solver(isotope_names=isotopes)
+sim = solver(species_names=isotopes)
 # Register all decay events.
 sim.add_removal(0, hl[0], [-1])
 sim.add_removal(1, hl[1], [ 2])
