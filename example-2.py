@@ -54,10 +54,12 @@ sim.add_removal(7, hl[7], [-1])
 # Register all absorption events.
 sim.add_removal(0, 1E-4, [ 1])
 sim.add_removal(3, 1E-5, [ 4])
-# Register all fission events.
-sim.add_removal(0, 1E-5*(0.013157), [ 5])
-sim.add_removal(0, 1E-5*(1.11541594E-04), [ 6])
-sim.add_removal(0, 1E-5*(1-1.11541594E-04-0.013157), [-1])
+
+# Register fission event. A fission event MUST at least has TWO
+# DAUGHTER PRODUCTS. For example, add I135 [5] and Xe135 [6] as the daughters.
+sim.add_removal(species_index=0, rate=1E-5, products=[5,6], 
+                fission_yields=[0.013157,1.11541594E-04])
+
 # Prepare the initial weights/concentrations.
 w0 = [
     1E+12,
