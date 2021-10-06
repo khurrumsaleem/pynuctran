@@ -296,7 +296,8 @@ class solver:
                     if not products[k] <= -1:
                         self.A[products[k]][isotope_index] += rate * fission_yield[k]
             else:
-                print('Fatal Error: Insufficient fission yields provided for isotope ' + self.isotope_names[isotope_index])
+                print('Fatal Error: Insufficient fission yields provided for isotope ' \
+                      + self.isotope_names[isotope_index])
                 exit()
 
         # For non-fission case (decay, (n,2n),(n,3n),(n,a),(n,p))... the case if fission_yield is not supplied.
@@ -314,26 +315,38 @@ class solver:
             print('Fission events must have >1 products to track.')
             exit()
                 
-
+    # Prepare the transmutation matrix A for CRAM.
     def prepare_transmutation_matrix(self) -> csr_matrix:
         return csr_matrix(np.array(self.A))
 
-    def prepare_transfer_matrix(self, dt: float, consolidate: bool = False) -> np.ndarray:
-
-        # A list of tuples storing the position of short lived species in the matrix.
-        sl_positions = []
+      
+'''
+    ***********************************************************************************
+    THIS SUB-SECTION IS THE CORE OF THE PI-DISTRIBUTION METHOD DEPLETION CALCULATION
+    IMPLEMENTED IN PyNUCTRAN. 
+    ***********************************************************************************
+    
+    prepare_transfer_matrix(dt) is a function that constructs the transfer matrix,
+    based on the provided removal events parameters specified via add_removal(...)
+    method. dt=time_step/substeps is the substep interval.
+    
+    TODO: To further clean-up the code for fast and efficient computation of the 
+    transfer matrix.
+    
+'''
+    def prepare_transfer_matrix(self, dt: float) -> np.ndarray:
 
         # Initialize the sparse matrix.
         A = [ [dc.Decimal(0.0) for i in range(self.__I__)] for i in range(self.__I__)]
         for i in range(self.__I__):
 
-            # Total number of events. This includes the no-removal event.
+            # Total number of events. These events include the no-removal event.
             n_events = len(self.G[i])
 
             # Initialize the normalization factor, c. Norm is the sum of all probs.
             norm = dc.Decimal(0.0)
 
-            # Compute the probability of removals.
+            # Compute the probability of removals... π(i,j).
             for j in range(n_events):
                 self.P[i].append(dc.Decimal(1.0))
                 for l in range(1, n_events):
@@ -349,89 +362,48 @@ class solver:
                 for l in range(no_of_daughters):
                     # For fission case, we need to multiply the probability with the fission yield.
                     # Sidenote: fission reaction will always have more than one daughters,
-                    # len(G[i][j]) > 1
+                    k = self.G[i][j][l]
                     if no_of_daughters > 1:
-                        k = self.G[i][j][l]
-                        if not k < 0:
+                        if not k <= -1:
                             A[k][i] += self.P[i][j] * dc.Decimal(self.fission_yield[i][l])
-                            if A[k][i] == dc.Decimal(1.0):
-                                sl_positions.append([k,i])
                     
                     # Here we process removal events with only one product, i.e., (n,a),(n,p),(n,2n),
                     # and so on.
                     else:
-                        k = self.G[i][j][l]
-                        if not k < 0:
+                        if not k <= -1:
                             A[k][i] += self.P[i][j]
-                            if A[k][i] == dc.Decimal(1.0):
-                                sl_positions.append([k,i])
                 if j == 0:
                         A[i][i] += self.P[i][j]
 
-        if not consolidate:
-            return np.matrix(A)
-
-        # Consolidates short lived species...
-        for pos in sl_positions:
-            A[pos[0]] = [x + y for x, y in zip(A[pos[0]], copy.deepcopy(A[pos[1]]))]
-            A[pos[1]] = [dc.Decimal(0.0) for i in range(self.__I__)]
-            A[pos[0]][pos[1]] = dc.Decimal(0.0)
         return np.matrix(A)
-
-    def solve(self, n0: np.array, t: float, steps: int, consolidate: bool = False) -> np.ndarray:
+'''
+    ***********************************************************************************
+    THIS SUB-SECTION IS THE CORE OF THE PI-DISTRIBUTION METHOD DEPLETION CALCULATION
+    IMPLEMENTED IN PyNUCTRAN. 
+    ***********************************************************************************
+    
+    solve(n0, t, steps) returns the species concentrations after t seconds. n0 is the
+    initial species concentrations. t is to total time step. substeps is the total
+    number of substeps.
+    
+'''
+    def solve(self, n0: np.array, t: float, substeps: int) -> np.ndarray:
         long_n0 = np.transpose(np.matrix([dc.Decimal(x) for x in n0]))
-        dt = t / steps
+        dt = t / substeps
         A = self.prepare_transfer_matrix(dt, consolidate)
-        n = np.matmul(np.linalg.matrix_power(A, steps), long_n0)
+        n = np.matmul(np.linalg.matrix_power(A, substeps), long_n0)
         return np.array(n, dtype=np.float64)
-
-############ OBSOLETE METHOD. THE DIRECT SIMULATION METHOD. #############
-#    def process(self, k, r_w, dw):
-#        for l in range(1, len(self.G[k])):
-#            if self.P[k][l] == dc.Decimal(1.0):
-#                for g in self.G[k][l]:
-#                    self.process(g, r_w, dw)
-#                return     
-#        r_w[k] = r_w[k] + dw
-#        return
-#
-#    def run(self, w_in: list):
-#
-#        w_vs_steps = []
-#
-#        # Prepare the initial weights forall isotopes.
-#        w0 = [dc.Decimal(w_in[i]) for i in range(len(w_in))]
-#        w_vs_steps.append(copy.deepcopy(w0))
-#
-#
-#        # Set the first timestep w to w0
-#        w = copy.deepcopy(w0)
-#        for t in range(self.steps):
-#            
-#            r_w = [dc.Decimal(0.0) for i in range(self.__I__)]
-#
-#            for i in range(self.__I__):
-#                for j in range(len(self.G[i])):
-#                    dw = self.P[i][j] * w[i]
-#                    for g in self.G[i][j]:
-#                        if not g == self.__const_no_product__:
-#                            self.process(g, r_w, dw)
-#                r_w[i] = r_w[i] + self.P[i][0] * w[i]
-#
-#            # Record isotope weights data...
-#            w_vs_steps.append(copy.deepcopy(r_w))
-#
-#            # update w...
-#            w = copy.deepcopy(r_w)
-#
-#
-#        end_time = tm.process_time()
-#        return w_vs_steps
-#
-######### OBSOLETE METHOD. THE DIRECT SIMULATION METHOD. ##############
 
 '''
     SECTION III: DEPLETION DATA PRE-PROCESSING ................................................ SEC. III
+    
+    *******************************************************************************************
+    THIS SECTION ENABLES THE RETRIEVAL OF NUCLIDES DATA FROM ENDF.
+    THE NUCLIDE DATA ARE STORED IN chain_endfb71.xml. 
+    
+    The XML file can be retrieved here:
+    https://github.com/mit-crpg/opendeplete/blob/master/chains/chain_endfb71.xml
+    *******************************************************************************************
 '''
 class depletion_scheme:
 
@@ -443,9 +415,6 @@ class depletion_scheme:
         Parameters:
 
         xml_data_location: A string specifying the location of chains_endfb71.xml on the disk.
-        species_names    : A python list containing the names of the species involved in the
-                           depletion scheme. The species name must be equal to the nuclide ids
-                           defined in chains_endfb71.xml. For example, [U235, Pu239, Am241,...].
         rxn_rates        : A 2D python dictionary containing the reaction rates of various
                            removal events. For example,
 
@@ -456,10 +425,11 @@ class depletion_scheme:
 
     '''
     @staticmethod
-    def build_chain(xml_data_location: str, species_names: list, solver: solver, rxn_rates):
+    def build_chains(xml_data_location: str, solver: solver, rxn_rates):
 
         t0 = tm.process_time()
 
+        species_names = solver.species_names
         tree = ET.parse(xml_data_location)
         root = tree.getroot()
 
