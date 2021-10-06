@@ -25,7 +25,7 @@ hl = [   np.log(2)/1.4099935680E+17,  np.log(2)/1.4070E+03,  np.log(2)/2.0355840
          np.log(2)/2.325795120E+11,  np.log(2)/3.6360E+04,  np.log(2)/5.715081360E+08
      ]
 
-sim = solver(isotope_names = isotopes)
+sim = solver(species_names = isotopes)
 # Register decay events.
 sim.add_removal(0, hl[0], [-1])
 sim.add_removal(1, hl[1], [ 2])
