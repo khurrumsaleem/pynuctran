@@ -169,10 +169,7 @@ class cram:
         return y
 
 '''
-    SECTION II: PyNUCTRAN SOLVER MODULE........................................ SEC. II
-'''
-'''
-...............................................................................
+SECTION II: PyNUCTRAN SOLVER MODULE............................................ SEC. II
 A PYTHON LIBRARY FOR NUCLEAR TRANSMUTATION SOLVER (PyNUCTRAN)
 License: MIT
 
@@ -321,20 +318,20 @@ class solver:
         return csr_matrix(np.array(self.A))
 
       
-'''
-    ***********************************************************************************
-    THIS SUB-SECTION IS THE CORE OF THE PI-DISTRIBUTION METHOD DEPLETION CALCULATION
-    IMPLEMENTED IN PyNUCTRAN. 
-    ***********************************************************************************
-    
-    prepare_transfer_matrix(dt) is a function that constructs the transfer matrix,
-    based on the provided removal events parameters specified via add_removal(...)
-    method. dt=time_step/substeps is the substep interval.
-    
-    TODO: To further clean-up the code for fast and efficient computation of the 
-    transfer matrix.
-    
-'''
+    '''
+        ***********************************************************************************
+        THIS SUB-SECTION IS THE CORE OF THE PI-DISTRIBUTION METHOD DEPLETION CALCULATION
+        IMPLEMENTED IN PyNUCTRAN. 
+        ***********************************************************************************
+        
+        prepare_transfer_matrix(dt) is a function that constructs the transfer matrix,
+        based on the provided removal events parameters specified via add_removal(...)
+        method. dt=time_step/substeps is the substep interval.
+        
+        TODO: To further clean-up the code for fast and efficient computation of the 
+        transfer matrix.
+        
+    '''
     def prepare_transfer_matrix(self, dt: float) -> np.ndarray:
 
         # Initialize the sparse matrix.
@@ -377,17 +374,18 @@ class solver:
                         A[i][i] += self.P[i][j]
 
         return np.matrix(A)
-'''
-    ***********************************************************************************
-    THIS SUB-SECTION IS THE CORE OF THE PI-DISTRIBUTION METHOD DEPLETION CALCULATION
-    IMPLEMENTED IN PyNUCTRAN. 
-    ***********************************************************************************
-    
-    solve(n0, t, steps) returns the species concentrations after t seconds. n0 is the
-    initial species concentrations. t is to total time step. substeps is the total
-    number of substeps.
-    
-'''
+
+    '''
+        ***********************************************************************************
+        THIS SUB-SECTION IS THE CORE OF THE PI-DISTRIBUTION METHOD DEPLETION CALCULATION
+        IMPLEMENTED IN PyNUCTRAN. 
+        ***********************************************************************************
+        
+        solve(n0, t, steps) returns the species concentrations after t seconds. n0 is the
+        initial species concentrations. t is to total time step. substeps is the total
+        number of substeps.
+        
+    '''
     def solve(self, n0: np.array, t: float, substeps: int) -> np.ndarray:
         long_n0 = np.transpose(np.matrix([dc.Decimal(x) for x in n0]))
         dt = t / substeps
