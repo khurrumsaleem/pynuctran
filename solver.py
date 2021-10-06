@@ -389,7 +389,7 @@ class solver:
     def solve(self, n0: np.array, t: float, substeps: int) -> np.ndarray:
         long_n0 = np.transpose(np.matrix([dc.Decimal(x) for x in n0]))
         dt = t / substeps
-        A = self.prepare_transfer_matrix(dt, consolidate)
+        A = self.prepare_transfer_matrix(dt)
         n = np.matmul(np.linalg.matrix_power(A, substeps), long_n0)
         return np.array(n, dtype=np.float64)
 
@@ -521,3 +521,4 @@ class depletion_scheme:
         for species in root:
             species_names.append(species.attrib['name'])
         return species_names
+
