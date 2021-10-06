@@ -268,7 +268,8 @@ class solver:
                         For fission reactions, the number of products must be >1. Products that
                         are not tracked must be set to -1. For instance, [2,-1], [-1].. etc.
         fission_yield - A list of fission yield. The length of the list must equal to the number of
-                        products. 
+                        products.
+                        
         
     '''
     def add_removal(self, isotope_index: int, 
@@ -311,7 +312,7 @@ class solver:
                     self.A[product][isotope_index] += rate
         else:
             print('Fatal Error: Invalid removal definition for isotope ' + self.isotope_names[isotope_index])
-            print('Non-fission events must have only one daughter product.')
+            print('Non-fission events MUST only have one daughter product.')
             print('Fission events must have >1 products to track.')
             exit()
                 
@@ -455,7 +456,6 @@ class depletion_scheme:
                         solver.add_removal(parent_id, decay_rate_adjusted, [daughter_id])
                     else:
                         solver.add_removal(parent_id, decay_rate_adjusted, [-1])
-                        # print('Added removal of type decay, parent = %8s\t daughter = %8s\t rate = %.15g.' % (parent, daughter, decay_rate_adjusted))
                 
                 # If reaction rates are not provided then we skip this.
                 if not rxn_rates is None:
@@ -499,17 +499,12 @@ class depletion_scheme:
                                 yields_to_add = []
                                 daughters_id_to_add = []
                                 for product in products:
-                                    # For fission, we separate the products into (1) defined-products and
-                                    # (2) undefined-products. A defined-products are a list of fission products
-                                    # registered in the species_names list. Undefined-products are combined together
-                                    # and not tracked, however, the production of these products still affects 
-                                    # the parent species concentration. 
                                     if product in species_names:
                                         daughters_id_to_add.append(species_names.index(product))
                                         yields_to_add.append(yields[products.index(product)])
                                 parent_id = species_names.index(species_name)
                                 solver.add_removal(parent_id, total_fission_rate, daughters_id_to_add, yields_to_add)
-                                # Creating a dummy removal events to account for the undefined-products.
+  
                                
         # Report the data processing time.
         t1 = tm.process_time()
