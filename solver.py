@@ -6,10 +6,16 @@ from scipy.sparse import csr_matrix
 import xml.etree.ElementTree as ET
 
 '''
-    SECTION I: CHEBYSHEV RATIONAL APPRIXIMATION METHOD OF ORDER-16/48........... SEC. I
+    ****************************************************************************
+    IF YOU WISH TO LOOK AT PyNUCTRAN's IMPLEMENTATION, PLEASE PROCESS TO SECTION
+    II.
+    ****************************************************************************
+ 
+    SECTION I: CHEBYSHEV RATIONAL APPROXIMATION METHOD OF ORDER-16/48........... SEC. I
 
     This code is obtained from MIT's CRPG group.
     This code is only used for the purpose of PyNUCTRAN's verification. 
+    PyNUCTRAN has nothing to do with CRAM.
 
     Not to be publicly disclosed to PyNUCTRAN user. 
 
@@ -423,28 +429,6 @@ class solver:
 #        return w_vs_steps
 #
 ######### OBSOLETE METHOD. THE DIRECT SIMULATION METHOD. ##############
-
-    def plot_concentrations(self, w                : list, 
-                                  isotopes_to_plot : list, 
-                                  colors           : list = []):
-
-        new_w = np.transpose(np.matrix(w)).tolist()
-        names_to_plot =[]
-        for i in range(len(isotopes_to_plot)):
-            names_to_plot.append(self.isotope_names[i])
-            if not colors == []:
-                plt.scatter([j for j in range(0,len(new_w[isotopes_to_plot[i]]))],new_w[isotopes_to_plot[i]], color=colors[i], s=4)
-            else:
-                plt.scatter([j for j in range(0,len(new_w[isotopes_to_plot[i]]))],new_w[isotopes_to_plot[i]], s=4)
-#        names_to_plot =[]
-#        for i in isotopes_to_plot:
-#            names_to_plot.append(self.isotope_names[i])
-        plt.xlabel('Sub step')
-        plt.ylabel('Isotope Concentrations')
-        plt.legend(names_to_plot, loc='upper right')
-
-        return
-
 
 '''
     SECTION III: DEPLETION DATA PRE-PROCESSING ................................................ SEC. III
