@@ -23,7 +23,7 @@ isotopes = [ 'U238','U239','Np239',
            ]
 
 # Initialize the PyNUCTRAN solver.
-sim = solver(isotope_names = isotopes)
+sim = solver(species_names = isotopes)
 
 # Register the rates of neutron-induced reaction events.
 # The pre-defined reaction ids are:
@@ -40,7 +40,7 @@ rxn_rates = {
 # Build the depletion scheme based on the nuclides data stored in chains_endfb71.xml.
 # In this example, the XML data is located at E:\chain_endfb71.xml. You may want to
 # replace this file location.
-depletion_scheme.build_chain('E:\\chain_endfb71.xml',isotopes,sim,rxn_rates)
+depletion_scheme.build_chains('E:\\chain_endfb71.xml',sim,rxn_rates)
 
 # Setup the initial concentration. The size of w0 must be equal to the number of 
 # species defined in the depletion scheme.
