@@ -1,5 +1,4 @@
-# PyNUCTRAN
-## A Solver for Nuclear Transmutation Problems.
+# PyNUCTRAN: A Solver for Nuclear Transmutation Problems.
 
 ### ```pip install pynuctran```
 <div align="justify">
@@ -37,15 +36,15 @@ A transmutation process involves the removal of a nuclide from a system. Then it
 </div>
 
 <div align="justify">
-  The simulation requires the division of time into <i>N</i> regular substeps, and the substep interval is Δ<i>t</i>. Consider an isotope-<i>i</i> which is expecting to experience <i>J<sub>i</sub></i> removal events. For example, U-235 may experience absorption, fission and decay events, so, there are <i>J<sub>i</sub></i>=3 removal events. The removal probability (or probability of a removal event to occur) of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics, leading to an un-normalized joint Poisson distribution (later known as π-distribution),
+  The simulation requires the division of time into <i>N</i> regular substeps, and the substep interval is Δ<i>t</i>. Consider an isotope-<i>i</i> which is expecting to experience <i>J<sub>i</sub></i> removal events. For example, U-235 may experience absorption, fission and decay events, so, there are <i>J<sub>i</sub></i>=3 removal events. Let Λ<sub><i>ij</i></sub> be the rate (per secs.) of removal event-<i>j</i> experience by isotope <i>i</i>. For decay removal events, Λ<sub><i>ij</i></sub> is the decay constant multiplied with the branching ratio of the decay branch, i.e. Λ<sub><i>ij</i></sub> = b<sub><i>ij</i></sub></sub>λ<sub><i>ij</i></sub>.  The removal probability (or probability of a removal event to occur) of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics, leading to an un-normalized joint Poisson distribution (later known as π-distribution),
 </div>
 
 \
-<img src="https://latex.codecogs.com/svg.image?\widetilde{\pi}_{il}&space;=&space;\prod_{j=1}^{J_i}\left\{&space;\delta_{lj}&plus;(-1)^{\delta_{lj}}&space;e^{-\lambda_{j}\Delta&space;t}\right\}" title="\pi_{ij} = \prod_{l=1}^{J_i}\left\{ \delta_{lj}+(-1)^{\delta_{lj}} e^{-\lambda_{l}\Delta t}\right\}" />
+<img src="https://latex.codecogs.com/svg.image?\widetilde{\pi}_{il}&space;=&space;\prod_{j=1}^{J_i}\left\{&space;\delta_{lj}&plus;(-1)^{\delta_{lj}}&space;e^{-\Lambda_{j}\Delta&space;t}\right\}" title="\pi_{ij} = \prod_{l=1}^{J_i}\left\{ \delta_{lj}+(-1)^{\delta_{lj}} e^{-\Lambda_{l}\Delta t}\right\}" />
 
 The probability of isotope-*i* for not being removed from the system is given by
 
-<img src="https://latex.codecogs.com/svg.image?\widetilde{\pi}_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\lambda_{j}\Delta&space;t}" title="\pi_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
+<img src="https://latex.codecogs.com/svg.image?\widetilde{\pi}_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\Lambda_{j}\Delta&space;t}" title="\pi_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
 
 The normalized probability of removal-*l* to occur is given by (l=0 is for no-removal):
 
@@ -75,11 +74,11 @@ It is important to remark that the matrix power in the above equation can be eva
 ## Derivation of π-distribution
 
 <div align="justify">
-The Poisson probability distribution function appeared in many applications that model the number of events occurring within a given time interval, Δt. The abscissa of the distribution function is the number of events, <i>k</i>∈{0,1,…,∞}, occurring within Δt. The distribution is characterized by the parameter λ, which is the average number of events occurring within (t, t+Δt). The formula for Poisson distribution is given by
+The Poisson probability distribution function appeared in many applications that model the number of events occurring within a given time interval, Δt. The abscissa of the distribution function is the number of chance(s) for the event to occur, <i>k</i>∈{0,1,…,∞}, occurring within Δt. The distribution is characterized by the parameter μ, which is the average number of events occurring within (t, t+Δt). The formula for Poisson distribution is given by
  </div>
 
 \
-<img src="https://latex.codecogs.com/svg.latex?p_i\left&space;(&space;k;&space;\Lambda&space;\right&space;)&space;=&space;\frac{e^{-\Lambda&space;}&space;\Lambda^k}{k!}" title="p_i\left ( k; \Lambda \right ) = \frac{e^{-\Lambda } \Lambda^k}{k!}" />
+<img src="https://latex.codecogs.com/svg.latex?p_i\left&space;(&space;k;&space;\mu&space;\right&space;)&space;=&space;\frac{e^{-\mu&space;}&space;\mu^k}{k!}" title="p_i\left ( k; \Lambda \right ) = \frac{e^{-\Lambda } \Lambda^k}{k!}" />
 
 <div align="justify">
 Transmutations follow the Poisson process, and they consist of a series of nuclear events. The average time between events is known, but the exact timing of events is random. Most importantly, the events are independent. Here, one event does not affect the arrival of the other events. For instance, the decay event of a nuclide does not affect the decay event of other nuclides, since the decay rate is the intrinsic property of the species. 
@@ -90,7 +89,7 @@ Suppose we select a nuclide of species i from a system during a particular time 
  
 Now, consider that the rate, Λ<sub><i>ij</i></sub>, for each possible event is known. Intuitively,
 
-<img src="https://latex.codecogs.com/svg.latex?\lambda_j&space;=&space;\Lambda_j&space;\Delta&space;t" title="\lambda_j = \Lambda_j \Delta t" />
+<img src="https://latex.codecogs.com/svg.latex?\mu_j&space;=&space;\Lambda_j&space;\Delta&space;t" title="\lambda_j = \Lambda_j \Delta t" />
 
 
 <div align="justify">
