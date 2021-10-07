@@ -15,7 +15,13 @@ from scipy.sparse.csr import csr_matrix
 # To include all nuclides replace the definition of isotopes with the
 # following:
 #
+# To include the entire 3000++ nuclides (this requires calculation on a legit machine.
 # isotopes = depletion_scheme.get_all_species_names('path\\to\\chains_endfb71.xml')
+# 
+# To include range of nuclides, with mass number between AMin and AMax:
+# isotopes = depletion_scheme.get_all_species_names_range('path\\to\\chains_endfb71.xml', AMin, AMax)
+#
+#
 isotopes = [ 'U238','U239','Np239',
              'Pu239','Pu240','Pu241',
              'Pu242','Pu243','Am241',
