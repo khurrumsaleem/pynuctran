@@ -36,17 +36,17 @@ A transmutation process involves the removal of a nuclide from a system. Then it
 </div>
 
 <div align="justify">
-  The simulation requires the division of time into <i>N</i> regular substeps, and the substep interval is Δ<i>t</i>. Consider an isotope-<i>i</i> which is expecting to experience <i>J<sub>i</sub></i> removal events. For example, U-235 may experience absorption, fission and decay events, so, there are <i>J<sub>i</sub></i>=3 removal events. Let Λ<sub><i>ij</i></sub> be the rate (per secs.) of removal event-<i>j</i> experience by isotope <i>i</i>. For decay removal events, Λ<sub><i>ij</i></sub> is the decay constant multiplied with the branching ratio of the decay branch, i.e. Λ<sub><i>ij</i></sub> = b<sub><i>ij</i></sub></sub>λ<sub><i>ij</i></sub>.  The removal probability (or probability of a removal event to occur) of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics, leading to an un-normalized joint Poisson distribution (later known as π-distribution),
+  The simulation requires the division of time into <i>N</i> regular substeps, and the substep interval is Δ<i>t</i>. Consider an isotope-<i>i</i> which is expecting to experience <i>J<sub>i</sub></i> removal events. For example, U-235 may experience absorption, fission and decay events, so, there are <i>J<sub>i</sub></i>=3 removal events. Let Λ<sub><i>ij</i></sub> be the rate (per secs.) of removal event-<i>j</i> experienced by isotope <i>i</i>. For decay removal events, Λ<sub><i>ij</i></sub> is the decay constant multiplied with the branching ratio of the decay branch, i.e. Λ<sub><i>ij</i></sub> = b<sub><i>ij</i></sub></sub>λ<sub><i>ij</i></sub>.  The removal probability (or probability of a removal event to occur) of isotope-<i>i</i> from a system due to <i>j</i>-th removal process can be derived from Poisson statistics, leading to an un-normalized joint Poisson distribution (later known as π-distribution),
 </div>
 
 \
 <img src="https://latex.codecogs.com/svg.image?\widetilde{\pi}_{il}&space;=&space;\prod_{j=1}^{J_i}\left\{&space;\delta_{lj}&plus;(-1)^{\delta_{lj}}&space;e^{-\Lambda_{j}\Delta&space;t}\right\}" title="\pi_{ij} = \prod_{l=1}^{J_i}\left\{ \delta_{lj}+(-1)^{\delta_{lj}} e^{-\Lambda_{l}\Delta t}\right\}" />
 
-The probability of isotope-*i* for not being removed from the system is given by
+where δ<sub><i>il</i></sub> is the <a href="https://en.wikipedia.org/wiki/Kronecker_delta">Kronecker delta</a>. The probability of isotope-*i* for not being removed from the system is given by *l*=0
 
 <img src="https://latex.codecogs.com/svg.image?\widetilde{\pi}_{i0}&space;=&space;\prod_{j=1}^{J_i}&space;e^{-\Lambda_{j}\Delta&space;t}" title="\pi_{i0} = \prod_{j=1}^{J_i} e^{-\lambda_{j}\Delta t}" />
 
-The normalized probability of removal-*l* to occur is given by (l=0 is for no-removal):
+The normalized probability of removal-*l* to occur is given by (*l*=0 is for no-removal, the case when no removal events happen):
 
 <img src="https://latex.codecogs.com/svg.latex?\pi_{il}&space;=&space;\frac{\widetilde{\pi}_{il}&space;}{\sum_{j=0}^{J_{i}}\widetilde{\pi}_{ij}}" title="P_{il} = \frac{f_{il} }{\sum_{j=0}^{J_{i}}f_{ij}}" />
 
