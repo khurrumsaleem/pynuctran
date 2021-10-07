@@ -189,11 +189,21 @@ Before reading this section, you must have the basic idea of object-oriented pro
 </div>
 
 
-#### ``` solver.solver(isotope_names: list) ```
+#### ``` solver.solver(species_names: list) ```
 Initializes the solver. ```isotope_names``` is a list of isotope names involved in the simulation. An isotope ID corresponds to the index of ```isotope_names```.  
 #### ``` solver.add_removal(isotope_index: int, rate: float, products: list)```
 Defines and adds a new removal process. ```isotope_id``` is the integer ID of the isotope subjected to the removal (the parent isotope). The ID corresponds to the index of ```isotope_names``` and  the isotope name is given by ```solver.isotope_names[isotope_id]```. ```rate``` is the rate of removal in /sec. For instance, ```rate``` is the decay constant of a decay process. ```products``` is a list of integers that corresponds to the IDs of the daughter isotopes. If the product is not known or not monitored, you must set ```products=[-1]```.
-#### ``` solver.solve(w0: list, t: float, steps: int) -> numpy.ndarray```
+#### ``` solver.solve(w0: list, t: float, substeps: int) -> numpy.ndarray```
 Runs the simulation. ```w0``` is the initial isotope concentrations, ```t``` is the time-step and ```steps``` is the total number of substeps. The length of ```w0``` must equals to the total number of isotopes defined via ```solver.add_removal(...)```. Returns a column matrix representing the isotope concentrations w.
+#### ``` build_chains(solver: solver, rxn_rates, xml_data_location: str = './chain_endfb71.xml') ```
+Instead of using ```solver.add_removal(...)``` to manually build the depletion chains, users are able to create the chains automatically using the prescribed XML nuclides data file. The XML file is the ```chain_endfb71.xml```, which is included in this package. solver is the solver class object used for the problem, and rxn_rates is a 2D python dictionary storing the event rates of various removal events. The keys of rxn_rates are ordered according to ```rxn_rates['species_name']['reaction_name']```. If necessary, users are required to build the dictionary manually. The species_name must derived from the species_names defined in the solver object. The accepted reaction names key are ```'fission'```,```'(n,a)'```,```'(n,p)'```,```'(n,gamma)'```,```'(n,2n)'```,```'(n,3n)'``` and ```'(n,4n)'```. For example:
+  
+ ```
+      rxn_rates = {
+          'U238' : {'(n,gamma)': 1E-04, 'fission': 1E-5},
+          'Pu239': {'(n,gamma)': 1E-05},
+          'Th232': {'(n,gamma)': 1E-05}
+      }
+  ```
 
 
