@@ -231,85 +231,91 @@ import decimal           as dc
 class solver:
 
     # shared private constants
-    __const_no_product__        = -1
-    __const_default_steps__     = 100
+    __no_product__        = -1
+    __zero__ = dc.Decimal(0.0)
+    __one__ = dc.Decimal(1.0)
+    __negone__ = dc.Decimal(-1.0)
 
-    def __init__(self, isotope_names: list):
+    def __init__(self, species_names: list):
 
-        # isotope_names stores the list of species defined by the user.
-        self.isotope_names = isotope_names
+        # species_names stores the list of species defined by the user.
         # __I__ stores the total number of species defined by the user.
-        self.__I__         = len(self.isotope_names)
         # lambdas is a 2D array storing the rates of removal events, indexed by
         # species_id (i) and next by removal event index (j).
-        self.lambdas       = [ []    for i in range(self.__I__)]
         # G is a 3D array storing the isotope_id of daughter species of each 
         # removal events. It is indexed by parent's species_id, removal event_id,
         # and lastly the daughter list.
-        self.G             = [[[-1]] for i in range(self.__I__)]
+        # P is a 2D array that stores the per-calculated event probabilities, π(i,j).
+        # A is a square matrix which is used in CRAM. It is used for PyNUCTRAN's 
+        # verification.
+        self.species_names = species_names        
+        self.__I__         = len(self.species_names)
+        self.lambdas       = [ []    for i in range(self.__I__)]
+        self.G             = [[[solver.__no_product__]] for i in range(self.__I__)]
         self.P             = [ []    for i in range(self.__I__)]
         self.A             = [ [0.0 for i in range(self.__I__)] for i in range(self.__I__) ]
-        self.fission_yield = [ []    for i in range(self.__I__)]
+        self.fission_yields = [ []    for i in range(self.__I__)]
 
-    '''
-        Adds a removal event to the solver.
-
-        Parameters:
-        isotope_index - The ID of the isotope species based on the species list given
-                        given during the initialization of solver class (refer to __init__(...)
-                        class constructor.)
-        rate          - The rate of the event, for decay, this is equivalent to branching_ratio*decay_rate.
-                        For fission, rate is equals to the total fission rate.
-        products      - The removal event product(s). For reactions other than fission, only one
-                        product is allowed. Here the product is a python list with one element.
-                        For fission reactions, the number of products must be >1. Products that
-                        are not tracked must be set to -1. For instance, [2,-1], [-1].. etc.
-        fission_yield - A list of fission yield. The length of the list must equal to the number of
-                        products.
-                        
-        
-    '''
+    # *************************************************************************
+    # add_removal(...) Adds a removal event to the solver.
+    #
+    # Parameters:
+    # isotope_index - The ID of the isotope species based on the species list 
+    #                 given during the initialization of solver class (refer 
+    #                 to __init__(...) class constructor.)
+    # rate          - The rate of the event, for decay, this is equivalent to 
+    #                 branching_ratio*decay_rate. For fission, rate is equals 
+    #                 to the total fission rate.
+    # products      - The removal event product(s). For reactions other than 
+    #                 fission, only one product is allowed. Here the product is 
+    #                 a python list with one element. For fission reactions, 
+    #                 the number of products must be >1. Products that are not 
+    #                 tracked must be set to -1, i.e., [2,-1], [-1].. etc.
+    # fission_yield - A list of fission yield. The length of the list must 
+    #                 equal to the number of products.
+    # *************************************************************************
     def add_removal(self, isotope_index: int, 
                           rate         : float, 
                           products     : list = [-1],
-                          fission_yield: list = None):
+                          fission_yields: list = None):
         d_rate = dc.Decimal(rate)
         i = isotope_index
         self.lambdas[i].append(d_rate)
         self.G[i]      .append(products)
 
-        # If fission_yield is supplied and the product is >= 1. Here, we know that
-        # the removal is a fission reaction.
-        if not fission_yield is None and len(products) > 1:
+        # If fission_yield is supplied and the product is >= 1. Here, we know 
+        # that the removal is a fission reaction.
+        if not fission_yields is None and len(products) > 1:
             # First we check if the fission yield size is the same with the 
             # number of products.
-            if len(fission_yield) == len(products):
+            if len(fission_yields) >= len(products):
                 # Update the fission yield table.
-                self.fission_yield[isotope_index] = fission_yield
+                self.fission_yields[isotope_index] = \
+                    [dc.Decimal(y) for y in fission_yields]
 
                 # Update the transmutation matrix A elements (for CRAM use),
                 # accounting the new removal event.
                 self.A[isotope_index][isotope_index] -= rate
                 for k in range(len(products)):       
-                    if not products[k] <= -1:
-                        self.A[products[k]][isotope_index] += rate * fission_yield[k]
+                    if not products[k] <= solver.__no_product__:
+                        self.A[products[k]][isotope_index] += rate * fission_yields[k]
             else:
-                print('Fatal Error: Insufficient fission yields provided for isotope ' \
-                      + self.isotope_names[isotope_index])
+                print('Fatal Error: Insufficient fission yields given for species ' \
+                      + self.species_names[isotope_index] + ' products.')
                 exit()
 
         # For non-fission case (decay, (n,2n),(n,3n),(n,a),(n,p))... the case if fission_yield is not supplied.
         # Of course, other 
-        elif fission_yield is None and len(products) == 1:
+        elif fission_yields is None and len(products) == 1:
             # Update the transmutation matrix A elements (for CRAM use),
             # accounting the new removal event.
             for product in products:
                 self.A[isotope_index][isotope_index] -= rate
-                if not product <= -1:
+                if not product <= solver.__no_product__:
                     self.A[product][isotope_index] += rate
         else:
-            print('Fatal Error: Invalid removal definition for isotope ' + self.isotope_names[isotope_index])
-            print('Non-fission events MUST only have one daughter product.')
+            print('Fatal Error: Invalid removal definition for isotope ' + self.species_names[isotope_index])
+            print('Non-fission events MUST only have ONE daughter product.')
             print('Fission events must have >1 products to track.')
             exit()
                 
@@ -335,41 +341,38 @@ class solver:
     def prepare_transfer_matrix(self, dt: float) -> np.ndarray:
 
         # Initialize the sparse matrix.
-        A = [ [dc.Decimal(0.0) for i in range(self.__I__)] for i in range(self.__I__)]
+        A = [ [solver.__zero__ for _ in range(self.__I__)] for _ in range(self.__I__)]
+        long_dt = dc.Decimal(dt)
+
         for i in range(self.__I__):
 
-            # Total number of events. These events include the no-removal event.
             n_events = len(self.G[i])
-
-            # Initialize the normalization factor, c. Norm is the sum of all probs.
-            norm = dc.Decimal(0.0)
+            norm = solver.__zero__
 
             # Compute the probability of removals... π(i,j).
+            E = [np.exp(-self.lambdas[i][l-1]*long_dt) for l in range(1,n_events)]
             for j in range(n_events):
-                self.P[i].append(dc.Decimal(1.0))
+                self.P[i].append(solver.__one__)
                 for l in range(1, n_events):
-                    kronecker = dc.Decimal(l == j)
-                    self.P[i][j] = self.P[i][j] * (kronecker + (dc.Decimal(-1))**kronecker * \
-                                      np.exp(-self.lambdas[i][l-1] * dc.Decimal(dt)))
+                    kron = l == j
+                    self.P[i][j] = self.P[i][j] * \
+                        (kron + (solver.__negone__)**kron * E[l-1])
                 norm = norm + self.P[i][j]
 
             # Construct the sparse transfer matrix.
             for j in range(n_events):
                 self.P[i][j] = self.P[i][j] / norm
-                no_of_daughters = len(self.G[i][j])
-                for l in range(no_of_daughters):
+                n_daughters = len(self.G[i][j])
+                for l in range(n_daughters):
                     # For fission case, we need to multiply the probability with the fission yield.
                     # Sidenote: fission reaction will always have more than one daughters,
                     k = self.G[i][j][l]
-                    if no_of_daughters > 1:
-                        if not k <= -1:
-                            A[k][i] += self.P[i][j] * dc.Decimal(self.fission_yield[i][l])
-                    
-                    # Here we process removal events with only one product, i.e., (n,a),(n,p),(n,2n),
-                    # and so on.
-                    else:
-                        if not k <= -1:
+                    if not k <= solver.__no_product__:
+                        if n_daughters > 1:
+                            A[k][i] += self.P[i][j] * self.fission_yields[i][l]
+                        else:
                             A[k][i] += self.P[i][j]
+                # Add a removal event.
                 if j == 0:
                         A[i][i] += self.P[i][j]
 
@@ -384,13 +387,15 @@ class solver:
         solve(n0, t, steps) returns the species concentrations after t seconds. n0 is the
         initial species concentrations. t is to total time step. substeps is the total
         number of substeps.
+
+        TODO: To investigate the optimum no. of substeps that gives the least rel. error.
         
     '''
-    def solve(self, n0: np.array, t: float, substeps: int) -> np.ndarray:
-        long_n0 = np.transpose(np.matrix([dc.Decimal(x) for x in n0]))
+    def solve(self, w0: np.array, t: float, substeps: int) -> np.ndarray:
+        long_w0 = np.transpose(np.matrix([dc.Decimal(x) for x in w0]))
         dt = t / substeps
         A = self.prepare_transfer_matrix(dt)
-        n = np.matmul(np.linalg.matrix_power(A, substeps), long_n0)
+        n = np.matmul(np.linalg.matrix_power(A, substeps), long_w0)
         return np.array(n, dtype=np.float64)
 
 '''
@@ -424,7 +429,7 @@ class depletion_scheme:
 
     '''
     @staticmethod
-    def build_chains(xml_data_location: str, solver: solver, rxn_rates):
+    def build_chains(solver: solver, rxn_rates, xml_data_location: str = 'chain_endfb71.xml'):
 
         t0 = tm.process_time()
 
@@ -453,7 +458,7 @@ class depletion_scheme:
                         daughter_id = species_names.index(daughter)
                         solver.add_removal(parent_id, decay_rate_adjusted, [daughter_id])
                     else:
-                        solver.add_removal(parent_id, decay_rate_adjusted, [-1])
+                        solver.add_removal(parent_id, decay_rate_adjusted, [solver.__no_product__])
                 
                 # If reaction rates are not provided then we skip this.
                 if not rxn_rates is None:
@@ -471,7 +476,7 @@ class depletion_scheme:
                                     daughter_id = species_names.index(daughter)
                                     solver.add_removal(parent_id, removal_rate, [daughter_id])
                                 else:
-                                    solver.add_removal(parent_id, removal_rate, [-1])
+                                    solver.add_removal(parent_id, removal_rate, [solver.__no_product__])
 
                         # Process fission reaction.
                         if removal.tag == 'neutron_fission_yields':
@@ -521,4 +526,6 @@ class depletion_scheme:
         for species in root:
             species_names.append(species.attrib['name'])
         return species_names
+
+
 
