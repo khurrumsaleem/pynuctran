@@ -40,7 +40,7 @@ rxn_rates = {
 # Build the depletion scheme based on the nuclides data stored in chains_endfb71.xml.
 # In this example, the XML data is located at E:\chain_endfb71.xml. You may want to
 # replace this file location.
-depletion_scheme.build_chains('E:\\chain_endfb71.xml',sim,rxn_rates)
+depletion_scheme.build_chains(sim, rxn_rates, 'E:\\chain_endfb71.xml')
 
 # Setup the initial concentration. The size of w0 must be equal to the number of 
 # species defined in the depletion scheme.
