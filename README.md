@@ -150,30 +150,30 @@ _Running the simulation._
 ```python
 import numpy as np
 
-# Define isotope names.
-iso = ['U235', 'U236','U237', 'Np237']
+# Define species names.
+sp = ['U235', 'U236','U237', 'Np237']
 # Initialize the solver.
-sim = solver(isotope_names=iso)
+sim = solver(species_names=sp)
 
 # Add the removal processes for U235...
-# U-235 decay: isotope_id=0 since it is the first iso element ...
+# U-235 decay: species_id=0 since it is the first iso element ...
 # products=[-1] indicates the code should not monitor the daugther isotopes. The rate must be in per second.
-sim.add_removal(isotope_index=0, rate=np.log(2)/2.2210238880E+16, products=[-1])
+sim.add_removal(species_index=0, rate=np.log(2)/2.2210238880E+16, products=[-1])
 # U-235 neutron absorptions.
-sim.add_removal(isotope_index=0, rate=1E-4, products=[1])
+sim.add_removal(species_index=0, rate=1E-4, products=[1])
 
 # Add the removal processes for U236, U237 and so on...
-sim.add_removal(isotope_index=1, rate=np.log(2)/7.390789920E+14, products=[-1])
-sim.add_removal(isotope_index=1, rate=1E-4, products=[2])
-sim.add_removal(isotope_index=2, rate=np.log(2)/5.8320E+05, products=[3])
-sim.add_removal(isotope_index=3, rate=np.log(2)/6.7659494310E+13, products=[-1])
+sim.add_removal(species_index=1, rate=np.log(2)/7.390789920E+14, products=[-1])
+sim.add_removal(species_index=1, rate=1E-4, products=[2])
+sim.add_removal(species_index=2, rate=np.log(2)/5.8320E+05, products=[3])
+sim.add_removal(species_index=3, rate=np.log(2)/6.7659494310E+13, products=[-1])
 
 
 # Assign the initial weight of all isotopes. The length of w0 is equal to the number of isotopes being monitored.
 w0 = [1.0, 0.0, 0.0, 0.0]
 
 # Evaluate the final species concentrations.
-final_w = sim.solve(w0, t=8.64E+4, steps=10000000000)
+final_w = sim.solve(w0, t=8.64E+4, substeps=10000000000)
 
 print(final_w)
 ```
@@ -190,12 +190,12 @@ Before reading this section, you must have the basic idea of object-oriented pro
 
 
 #### ``` solver.solver(species_names: list) ```
-Initializes the solver. ```isotope_names``` is a list of isotope names involved in the simulation. An isotope ID corresponds to the index of ```isotope_names```.  
-#### ``` solver.add_removal(isotope_index: int, rate: float, products: list)```
-Defines and adds a new removal process. ```isotope_id``` is the integer ID of the isotope subjected to the removal (the parent isotope). The ID corresponds to the index of ```isotope_names``` and  the isotope name is given by ```solver.isotope_names[isotope_id]```. ```rate``` is the rate of removal in /sec. For instance, ```rate``` is the decay constant of a decay process. ```products``` is a list of integers that corresponds to the IDs of the daughter isotopes. If the product is not known or not monitored, you must set ```products=[-1]```.
+Initializes the solver. ```species_names``` is a list of species names involved in the simulation. A species ID corresponds to the index of ```species_names```.  
+#### ``` solver.add_removal(species_index: int, rate: float, products: list)```
+Defines and adds a new removal process. ```isotope_id``` is the integer ID of the species subjected to the removal (the parent species). The ID corresponds to the index of ```species_names``` and  the species name is given by ```solver.species_names[species_id]```. ```rate``` is the rate of removal in /sec. For instance, ```rate``` is the decay constant of a decay process. ```products``` is a list of integers that corresponds to the IDs of the daughter species. If the product is not known or not monitored, you must set ```products=[-1]```.
 #### ``` solver.solve(w0: list, t: float, substeps: int) -> numpy.ndarray```
-Runs the simulation. ```w0``` is the initial isotope concentrations, ```t``` is the time-step and ```steps``` is the total number of substeps. The length of ```w0``` must equals to the total number of isotopes defined via ```solver.add_removal(...)```. Returns a column matrix representing the isotope concentrations w.
-#### ``` build_chains(solver: solver, rxn_rates, xml_data_location: str = './chain_endfb71.xml') ```
+Runs the simulation. ```w0``` is the initial species concentrations, ```t``` is the time-step and ```steps``` is the total number of substeps. The length of ```w0``` must equals to the total number of species defined via ```solver.add_removal(...)```. Returns a column matrix representing the species concentrations w after time <i>t</i>.
+#### ``` build_chains(solver: solver, rxn_rates, xml_data_location: str = 'chain_endfb71.xml') ```
 Instead of using ```solver.add_removal(...)``` to manually build the depletion chains, users are able to create the chains automatically using the prescribed XML nuclides data file. The XML file is the ```chain_endfb71.xml```, which is included in this package. solver is the solver class object used for the problem, and rxn_rates is a 2D python dictionary storing the event rates of various removal events. The keys of rxn_rates are ordered according to ```rxn_rates['species_name']['reaction_name']```. If necessary, users are required to build the dictionary manually. The species_name must derived from the species_names defined in the solver object. The accepted reaction names key are ```'fission'```,```'(n,a)'```,```'(n,p)'```,```'(n,gamma)'```,```'(n,2n)'```,```'(n,3n)'``` and ```'(n,4n)'```. For example:
   
  ```
