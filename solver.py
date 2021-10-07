@@ -4,6 +4,7 @@ import scipy.sparse.linalg as sla
 import decimal as dc
 from scipy.sparse import csr_matrix
 import xml.etree.ElementTree as ET
+import time as tm
 
 '''
     ****************************************************************************
@@ -220,14 +221,6 @@ Created on 3-10-21.
 (c) M. R. Omar, School of Physics, Universiti Sains Malaysia, 11800 Penang, MY.
 
 '''
-
-import numpy             as np
-import matplotlib.pyplot as plt
-import copy
-import matplotlib.pyplot as plt
-import time              as tm
-import decimal           as dc
-
 class solver:
 
     # shared private constants
@@ -274,12 +267,12 @@ class solver:
     # fission_yield - A list of fission yield. The length of the list must 
     #                 equal to the number of products.
     # *************************************************************************
-    def add_removal(self, isotope_index: int, 
+    def add_removal(self, species_index: int, 
                           rate         : float, 
                           products     : list = [-1],
                           fission_yields: list = None):
         d_rate = dc.Decimal(rate)
-        i = isotope_index
+        i = species_index
         self.lambdas[i].append(d_rate)
         self.G[i]      .append(products)
 
@@ -290,18 +283,18 @@ class solver:
             # number of products.
             if len(fission_yields) >= len(products):
                 # Update the fission yield table.
-                self.fission_yields[isotope_index] = \
+                self.fission_yields[i] = \
                     [dc.Decimal(y) for y in fission_yields]
 
                 # Update the transmutation matrix A elements (for CRAM use),
                 # accounting the new removal event.
-                self.A[isotope_index][isotope_index] -= rate
+                self.A[i][i] -= rate
                 for k in range(len(products)):       
                     if not products[k] <= solver.__no_product__:
-                        self.A[products[k]][isotope_index] += rate * fission_yields[k]
+                        self.A[products[k]][i] += rate * fission_yields[k]
             else:
                 print('Fatal Error: Insufficient fission yields given for species ' \
-                      + self.species_names[isotope_index] + ' products.')
+                      + self.species_names[i] + ' products.')
                 exit()
 
         # For non-fission case (decay, (n,2n),(n,3n),(n,a),(n,p))... the case if fission_yield is not supplied.
@@ -310,11 +303,11 @@ class solver:
             # Update the transmutation matrix A elements (for CRAM use),
             # accounting the new removal event.
             for product in products:
-                self.A[isotope_index][isotope_index] -= rate
+                self.A[i][i] -= rate
                 if not product <= solver.__no_product__:
-                    self.A[product][isotope_index] += rate
+                    self.A[product][i] += rate
         else:
-            print('Fatal Error: Invalid removal definition for isotope ' + self.species_names[isotope_index])
+            print('Fatal Error: Invalid removal definition for isotope ' + self.species_names[i])
             print('Non-fission events MUST only have ONE daughter product.')
             print('Fission events must have >1 products to track.')
             exit()
@@ -526,6 +519,3 @@ class depletion_scheme:
         for species in root:
             species_names.append(species.attrib['name'])
         return species_names
-
-
-
