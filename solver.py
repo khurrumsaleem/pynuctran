@@ -5,6 +5,7 @@ import decimal as dc
 from scipy.sparse import csr_matrix
 import xml.etree.ElementTree as ET
 import time as tm
+import copy
 
 '''
     ****************************************************************************
@@ -271,7 +272,7 @@ class solver:
                           rate         : float, 
                           products     : list = [-1],
                           fission_yields: list = None):
-        d_rate = dc.Decimal(rate)
+        d_rate = dc.Decimal('%g' % rate)
         i = species_index
         self.lambdas[i].append(d_rate)
         self.G[i]      .append(products)
@@ -284,14 +285,14 @@ class solver:
             if len(fission_yields) >= len(products):
                 # Update the fission yield table.
                 self.fission_yields[i] = \
-                    [dc.Decimal(y) for y in fission_yields]
+                    [dc.Decimal('%g' % y) for y in fission_yields]
 
                 # Update the transmutation matrix A elements (for CRAM use),
                 # accounting the new removal event.
                 self.A[i][i] -= rate
                 for k in range(len(products)):       
                     if not products[k] <= solver.__no_product__:
-                        self.A[products[k]][i] += rate * fission_yields[k]
+                        self.A[products[k]][i] += rate * np.longfloat(fission_yields[k])
             else:
                 print('Fatal Error: Insufficient fission yields given for species ' \
                       + self.species_names[i] + ' products.')
@@ -303,9 +304,9 @@ class solver:
             # Update the transmutation matrix A elements (for CRAM use),
             # accounting the new removal event.
             for product in products:
-                self.A[i][i] -= rate
+                self.A[i][i] -= np.longfloat(rate)
                 if not product <= solver.__no_product__:
-                    self.A[product][i] += rate
+                    self.A[product][i] += np.longfloat(rate)
         else:
             print('Fatal Error: Invalid removal definition for isotope ' + self.species_names[i])
             print('Non-fission events MUST only have ONE daughter product.')
@@ -329,29 +330,44 @@ class solver:
         
         TODO: To further clean-up the code for fast and efficient computation of the 
         transfer matrix.
+
+        Update-1: Of course, understanding the math of preparing the transfer matrix
+        is relatively easy and straightforward. Unfortunately, the matrix preparation
+        requires high presicion calculation. Even a small binary operation float error
+        will affect the accuracy of pi-distribution. Therefore, I preserved high
+        presicion calculation for the calculation of pi-distribution. Once the distri-
+        bution is computed, it is converted into np.longfloat and the transfer matrix
+        is saved using the Compressed Sparse Row (CSR) format.
         
     '''
-    def prepare_transfer_matrix(self, dt: float) -> np.ndarray:
-
+    def prepare_transfer_matrix(self, dt: np.float64, consolidate: bool = False) -> np.ndarray:
+        __zero__ = dc.Decimal('0.0')
+        __one__ = dc.Decimal('1.0')
+        __negone__ = dc.Decimal('-1.0')
+        sl_positions = []
+        dc.getcontext().prec = 15
         # Initialize the sparse matrix.
-        A = [ [solver.__zero__ for _ in range(self.__I__)] for _ in range(self.__I__)]
-        long_dt = dc.Decimal(dt)
+        #A = [ [__zero__ for _ in range(self.__I__)] for _ in range(self.__I__)]
+        A = np.zeros((self.__I__,self.__I__),dtype=np.float64)
+        long_dt = dc.Decimal('%g' % dt)
 
         for i in range(self.__I__):
 
             n_events = len(self.G[i])
-            norm = solver.__zero__
+            norm = __zero__
 
             # Compute the probability of removals... π(i,j).
-            E = [np.exp(-self.lambdas[i][l-1]*long_dt) for l in range(1,n_events)]
+            E = [(-self.lambdas[i][l-1]*long_dt).exp() for l in range(1,n_events)]
             for j in range(n_events):
-                self.P[i].append(solver.__one__)
+                self.P[i].append(__one__)
                 for l in range(1, n_events):
                     kron = l == j
                     self.P[i][j] = self.P[i][j] * \
-                        (kron + (solver.__negone__)**kron * E[l-1])
+                        (kron + (__negone__)**kron * E[l-1])
                 norm = norm + self.P[i][j]
 
+            if norm <= dc.Decimal('1E-15'):
+                continue
             # Construct the sparse transfer matrix.
             for j in range(n_events):
                 self.P[i][j] = self.P[i][j] / norm
@@ -360,16 +376,28 @@ class solver:
                     # For fission case, we need to multiply the probability with the fission yield.
                     # Sidenote: fission reaction will always have more than one daughters,
                     k = self.G[i][j][l]
-                    if not k <= solver.__no_product__:
+                    if not k == solver.__no_product__:
                         if n_daughters > 1:
-                            A[k][i] += self.P[i][j] * self.fission_yields[i][l]
+                            A[k][i] += np.float64(self.P[i][j] * self.fission_yields[i][l])
+                            if A[k][i] == __one__:
+                                sl_positions.append([k,i])
                         else:
-                            A[k][i] += self.P[i][j]
+                            A[k][i] += np.float64(self.P[i][j])
+                            if A[k][i] == __one__:
+                                sl_positions.append([k,i])
                 # Add a removal event.
                 if j == 0:
-                        A[i][i] += self.P[i][j]
+                        A[i][i] += np.float64(self.P[i][j])
 
-        return np.matrix(A)
+        if not consolidate:
+            return csr_matrix(np.matrix(A), dtype=np.float64)
+        
+        # Consolidates short lived species...
+        for pos in sl_positions:
+            A[pos[0]] = [x + y for x, y in zip(A[pos[0]], copy.deepcopy(A[pos[1]]))]
+            A[pos[1]] = [__zero__ for i in range(self.__I__)]
+            A[pos[0]][pos[1]] = __zero__
+        return csr_matrix(np.matrix(A), dtype=np.float64)
 
     '''
         ***********************************************************************************
@@ -384,12 +412,18 @@ class solver:
         TODO: To investigate the optimum no. of substeps that gives the least rel. error.
         
     '''
-    def solve(self, w0: np.array, t: float, substeps: int) -> np.ndarray:
-        long_w0 = np.transpose(np.matrix([dc.Decimal(x) for x in w0]))
-        dt = t / substeps
-        A = self.prepare_transfer_matrix(dt)
-        n = np.matmul(np.linalg.matrix_power(A, substeps), long_w0)
-        return np.array(n, dtype=np.float64)
+    def solve(self, w0: np.array, t: np.float64, substeps: np.int64, consolidate: bool = False) -> np.ndarray:
+        dc.getcontext().prec = 15
+        long_w0 = csr_matrix(np.transpose(np.matrix([dc.Decimal('%g' % x) for x in w0])), dtype=np.float64)
+        t_long = dc.Decimal('%g' % t)
+        dt = t_long / dc.Decimal('%g' % substeps)
+        t0 = tm.process_time()
+        A = self.prepare_transfer_matrix(dt, consolidate)
+        t1 = tm.process_time()
+        print('Done building transfer matrix. CPU time = %f secs' % (t1-t0))
+        An = A.__pow__(substeps)
+        n = An * long_w0
+        return n.toarray()
 
 '''
     SECTION III: DEPLETION DATA PRE-PROCESSING ................................................ SEC. III
@@ -464,7 +498,7 @@ class depletion_scheme:
                             if removal.attrib['type'] in rxn_rates[parent].keys() and \
                                not removal.attrib['type'] == 'fission':
                                 daughter = removal.attrib['target']
-                                removal_rate = float(rxn_rates[parent][removal.attrib['type']])
+                                removal_rate = dc.Decimal('%g' % rxn_rates[parent][removal.attrib['type']])
                                 if daughter in species_names:
                                     daughter_id = species_names.index(daughter)
                                     solver.add_removal(parent_id, removal_rate, [daughter_id])
@@ -489,7 +523,7 @@ class depletion_scheme:
                                                 if param.tag == 'products':
                                                     products = param.text.split()
                                                 if param.tag == 'data':
-                                                    yields = [float(y) for y in param.text.split()]
+                                                    yields = [dc.Decimal(y) for y in param.text.split()]
                              
                                 total_fission_rate = rxn_rates[parent]['fission']
                                 yields_to_add = []
@@ -519,3 +553,24 @@ class depletion_scheme:
         for species in root:
             species_names.append(species.attrib['name'])
         return species_names
+
+    @staticmethod
+    def get_all_species_names_range(xml_data_location: str, AMin: int, AMax: int) -> list:
+        tree = ET.parse(xml_data_location)
+        root = tree.getroot()
+        
+        species_names = []
+        for species in root:
+            name = species.attrib['name']
+            name = name.split('_')[0]
+            x = ''
+            for c in name:
+                if c.isnumeric():
+                    x += c
+            A = int(x)
+            if A >= AMin and A <= AMax:
+                species_names.append(name)
+        return species_names        
+
+
+
