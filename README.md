@@ -1,4 +1,4 @@
-# PyNUCTRAN: A Solver for Nuclear Transmutation Problems.
+# PyNUCTRAN: A Probabilistic Solver for Nuclear Transmutation Problems.
 
 ### ```pip install pynuctran```
 <div align="justify">
