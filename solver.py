@@ -6,7 +6,6 @@ from scipy.sparse import csr_matrix
 import xml.etree.ElementTree as ET
 import time as tm
 import copy
-
 '''
     ****************************************************************************
     IF YOU WISH TO LOOK AT PyNUCTRAN's IMPLEMENTATION, PLEASE PROCESS TO SECTION
@@ -162,7 +161,7 @@ class cram:
         alpha0 = 2.258038182743983e-47
 
         k = 24
-
+        
         y = np.array(n0, dtype=np.float64)
         for l in range(k):
             y = 2.0*np.real(alpha[l]*sla.spsolve(A*dt - theta[l]*sp.eye(n), y)) + y
@@ -340,16 +339,18 @@ class solver:
         is saved using the Compressed Sparse Row (CSR) format.
         
     '''
+   
     def prepare_transfer_matrix(self, dt: np.float64, consolidate: bool = False) -> np.ndarray:
+        dc.getcontext().prec = 50
         __zero__ = dc.Decimal('0.0')
-        __one__ = dc.Decimal('1.0')
+        __one__ =   dc.Decimal('1.0')
         __negone__ = dc.Decimal('-1.0')
+        #dc.getcontext().prec = 15
         sl_positions = []
-        dc.getcontext().prec = 15
         # Initialize the sparse matrix.
         #A = [ [__zero__ for _ in range(self.__I__)] for _ in range(self.__I__)]
         A = np.zeros((self.__I__,self.__I__),dtype=np.float64)
-        long_dt = dc.Decimal('%g' % dt)
+        long_dt = dc.Decimal('%.15g' % dt)
 
         for i in range(self.__I__):
 
@@ -366,11 +367,12 @@ class solver:
                         (kron + (__negone__)**kron * E[l-1])
                 norm = norm + self.P[i][j]
 
-            if norm <= dc.Decimal('1E-15'):
+            if norm < dc.Decimal('1E-50'):
                 continue
             # Construct the sparse transfer matrix.
             for j in range(n_events):
                 self.P[i][j] = self.P[i][j] / norm
+               
                 n_daughters = len(self.G[i][j])
                 for l in range(n_daughters):
                     # For fission case, we need to multiply the probability with the fission yield.
@@ -378,26 +380,26 @@ class solver:
                     k = self.G[i][j][l]
                     if not k == solver.__no_product__:
                         if n_daughters > 1:
-                            A[k][i] += np.float64(self.P[i][j] * self.fission_yields[i][l])
-                            if A[k][i] == __one__:
+                            A[k][i] += np.float64('%.15g' % (self.P[i][j] * self.fission_yields[i][l]))
+                            if A[k][i] == __one__ and consolidate:
                                 sl_positions.append([k,i])
                         else:
-                            A[k][i] += np.float64(self.P[i][j])
-                            if A[k][i] == __one__:
+                            A[k][i] += np.float64('%.15g' % self.P[i][j])
+                            if A[k][i] == __one__ and consolidate:
                                 sl_positions.append([k,i])
                 # Add a removal event.
                 if j == 0:
-                        A[i][i] += np.float64(self.P[i][j])
-
+                        A[i][i] += np.float64('%.15g' % self.P[i][j])
         if not consolidate:
-            return csr_matrix(np.matrix(A), dtype=np.float64)
+          
+            return csr_matrix(A, dtype=np.float64)
         
         # Consolidates short lived species...
         for pos in sl_positions:
             A[pos[0]] = [x + y for x, y in zip(A[pos[0]], copy.deepcopy(A[pos[1]]))]
             A[pos[1]] = [__zero__ for i in range(self.__I__)]
             A[pos[0]][pos[1]] = __zero__
-        return csr_matrix(np.matrix(A), dtype=np.float64)
+        return csr_matrix(A, dtype=np.float64)
 
     '''
         ***********************************************************************************
@@ -412,17 +414,28 @@ class solver:
         TODO: To investigate the optimum no. of substeps that gives the least rel. error.
         
     '''
-    def solve(self, w0: np.array, t: np.float64, substeps: np.int64, consolidate: bool = False) -> np.ndarray:
-        dc.getcontext().prec = 15
-        long_w0 = csr_matrix(np.transpose(np.matrix([dc.Decimal('%g' % x) for x in w0])), dtype=np.float64)
-        t_long = dc.Decimal('%g' % t)
-        dt = t_long / dc.Decimal('%g' % substeps)
+    def solve(self, w0: dict, t: np.uint64, substeps: int = 9999999999, consolidate: bool = False) -> np.ndarray:
+        w0_matrix = [np.float64('0.0') for i in range(self.__I__)]
+        for i in range(self.__I__):
+            if self.species_names[i] in w0.keys():
+                w0_matrix[i] = np.float64('%.15g' % w0[self.species_names[i]])
+        w0_matrix = csr_matrix(np.transpose(np.matrix(w0_matrix)))
+        
+        t_long = dc.Decimal('%.15g' % t)
+        dt = t_long / dc.Decimal('%.15g' % substeps)
+
         t0 = tm.process_time()
         A = self.prepare_transfer_matrix(dt, consolidate)
         t1 = tm.process_time()
-        print('Done building transfer matrix. CPU time = %f secs' % (t1-t0))
-        An = A.__pow__(substeps)
-        n = An * long_w0
+        print('Done building transfer matrix. Size = %s CPU time = %f secs.' % (A.shape, t1-t0))
+
+        t0 = tm.process_time()
+        An = A**(substeps)
+        n = An * w0_matrix
+        t1 = tm.process_time()
+        print('Done computing sparse matrix power. CPU time = %f secs.' % (t1-t0))
+        
+
         return n.toarray()
 
 '''
@@ -457,7 +470,6 @@ class depletion_scheme:
     '''
     @staticmethod
     def build_chains(solver: solver, rxn_rates, xml_data_location: str = 'chain_endfb71.xml'):
-
         t0 = tm.process_time()
 
         species_names = solver.species_names
@@ -498,7 +510,7 @@ class depletion_scheme:
                             if removal.attrib['type'] in rxn_rates[parent].keys() and \
                                not removal.attrib['type'] == 'fission':
                                 daughter = removal.attrib['target']
-                                removal_rate = dc.Decimal('%g' % rxn_rates[parent][removal.attrib['type']])
+                                removal_rate = dc.Decimal('%.15g' % rxn_rates[parent][removal.attrib['type']])
                                 if daughter in species_names:
                                     daughter_id = species_names.index(daughter)
                                     solver.add_removal(parent_id, removal_rate, [daughter_id])
@@ -571,6 +583,3 @@ class depletion_scheme:
             if A >= AMin and A <= AMax:
                 species_names.append(name)
         return species_names        
-
-
-
