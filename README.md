@@ -69,7 +69,7 @@ Here, R is a set of transmutation events that mutate species k into species i. N
 \
 <img src="https://latex.codecogs.com/svg.latex?\mathbf{w}(t)&space;=&space;\mathbf{A}^{t/\Delta&space;t}&space;\mathbf{w}(0)" title="w(t) = \mathbf{A}^{t/\Delta t} w(0)" />
 
-It is important to remark that the matrix power in the above equation can be evaluated efficiently using the binary decomposition method. Thanks to NumPy, the method is implemented in ```numpy.linalg.matrix_power(a,n)```. For non-python users, the matrix power algorithm can be found <a href="https://github.com/numpy/numpy/blob/v1.21.0/numpy/linalg/linalg.py#L553-L666" target=_blank>here</a>.
+It is important to remark that the matrix power in the above equation can be evaluated efficiently using the binary decomposition method via SciPy sparse matrix package, ```scipy.sparse.csr_matrix.__pow__()```.
 
 ## Derivation of π-distribution
 
