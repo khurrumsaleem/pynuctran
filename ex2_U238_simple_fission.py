@@ -10,7 +10,6 @@
   Pu239 Absorption rate: 1E-5 per secs.
   
   Time step = 1E+5 seconds.
-  No. of substeps = 1E+20.
   
 """
 
@@ -61,20 +60,12 @@ sim.add_removal(species_index=0, rate=1E-5, products=[5,6],
                 fission_yields=[0.013157,1.11541594E-04])
 
 # Prepare the initial weights/concentrations.
-w0 = [
-    1E+12,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-]
+w0 = {
+  'U238': 1E+12
+}
 
 total_time = 1E5
-steps = int(1E20)
-n_final = sim.solve(w0,total_time,steps)
+n_final = sim.solve(w0, total_time)
 
 
 #------------------ OBTAINING REFERENCE SOLUTION [CRAM48]----------------------------
@@ -88,15 +79,15 @@ n_final = sim.solve(w0,total_time,steps)
 # matrix A. Recall that CRAM approximates the matrix exponential given in the 
 # formula w(t) = exp(At) w0.
 A = sim.prepare_transmutation_matrix()
-
-
-n0 = np.transpose(np.array(w0))
+w0_matrix = [np.float64('0.0') for i in range(len(isotopes))]
+for key in w0.keys():
+    w0_matrix[isotopes.index(key)] = np.float64(w0[key])
+n0 = np.transpose(np.array(w0_matrix))
 n_final_cram = cram.order48(A,n0,total_time)
 
 # Prints the output of PyNUCTRAN solver and CRAM48, as well as their relative error.
-print('%21s---%21s---%21s' % ('-'*21,'-'*21,'-'*21))
-print('%21s   %21s   %21s' % ('Calculated','Reference (CRAM)', 'Rel. Error'))
-print('%21s---%21s---%21s' % ('-'*21,'-'*21,'-'*21))
+print('%-5s   %-5s   %-21s   %-21s   %-21s' % ('ID', 'Name','Calculated','Reference (CRAM)', 'Rel. Error'))
 for i in range(len(isotopes)):
-    print('%+20.14e\t%+20.14e\t%+20.14e' % (n_final[i],n_final_cram[i],\
-            (float(n_final[i])-n_final_cram[i])/n_final_cram[i]))
+    if n_final[i] > 1E-15:
+        print('%i\t%s\t%+20.14e\t%+20.14e\t%+20.14e' % (i, isotopes[i],n_final[i],n_final_cram[i],\
+                ((n_final[i])-n_final_cram[i])/n_final_cram[i]))
