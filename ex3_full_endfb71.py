@@ -43,7 +43,7 @@ rxn_rates = {
 # Build the depletion scheme based on the nuclides data stored in chains_endfb71.xml.
 depletion_scheme.build_chains(sim, rxn_rates)
 
-# Setup the initial concentration.
+# Setup the initial concentrations.
 w0 = {
     'U238': 1.0
 }
