@@ -1,8 +1,7 @@
 """
-  U-238 Depletion Problem [Using ENDFB71 nuclides library]
+  Full U238 Depletion Problem [Using ENDFB71 nuclides library]
   
   Time step: 2.84E+4 (2 days).
-  No. of sub-steps, t/dt: 1E+20.
    
 """
 
@@ -22,44 +21,37 @@ from scipy.sparse.csr import csr_matrix
 # isotopes = depletion_scheme.get_all_species_names_range('path\\to\\chains_endfb71.xml', AMin, AMax)
 #
 #
-isotopes = [ 'U238','U239','Np239',
-             'Pu239','Pu240','Pu241',
-             'Pu242','Pu243','Am241',
-             'Am243','Am244','Cm244'
-           ]
+
+# Create a list of species involved in the depletion problem.
+# It is possible to include all nuclides, but it is memory expensive.
+# To include 3821 nuclides:
+isotopes = depletion_scheme.get_all_species_names_range('E:\\chain_endfb71.xml',1,400)
 
 # Initialize the PyNUCTRAN solver.
-sim = solver(species_names = isotopes)
+sim = solver(species_names=isotopes)
 
 # Register the rates of neutron-induced reaction events.
 # The pre-defined reaction ids are:
 # [(n,gamma), (n,p), (n,a), (n,2n), (n,3n), (n,4n), fission]
 rxn_rates = {
-    'U238' : {'(n,gamma)': 1E-4},
-    'Pu239': {'(n,gamma)': 1E-4},
-    'Pu240': {'(n,gamma)': 1E-4},
-    'Pu241': {'(n,gamma)': 1E-4},
-    'Pu242': {'(n,gamma)': 1E-4},
-    'Am243': {'(n,gamma)': 1E-4}
+    'U238': {
+        '(n,gamma)' : 1E-4,
+        'fission'   : 1E-5
+    }
 }
 
 # Build the depletion scheme based on the nuclides data stored in chains_endfb71.xml.
-# In this example, the XML data is located at E:\chain_endfb71.xml. You may want to
-# replace this file location.
-depletion_scheme.build_chains(sim, rxn_rates, 'E:\\chain_endfb71.xml')
+depletion_scheme.build_chains(sim, rxn_rates)
 
-# Setup the initial concentration. The size of w0 must be equal to the number of 
-# species defined in the depletion scheme.
-w0 = [  1.00E+10, 1.00E+3, 0.00E+00, 
-        0.00E+00, 0.00E+00, 0.00E+00,
-        0.00E+00, 0.00E+00, 0.00E+00,
-        0.00E+00, 0.00E+00, 0.00E+00
-     ]
- 
+# Setup the initial concentration.
+w0 = {
+    'U238': 1.0
+}
+
 # Runs the calculation.
-total_time = 8.64E+4
-steps = int(1E15)
-n_final = sim.solve(w0,total_time,steps)
+total_time = 2.84E+4
+n_final = sim.solve(w0, total_time)
+
 
 
 #------------------ OBTAINING REFERENCE SOLUTION [CRAM48]----------------------------
@@ -73,14 +65,15 @@ n_final = sim.solve(w0,total_time,steps)
 # matrix A. Recall that CRAM approximates the matrix exponential given in the 
 # formula w(t) = exp(At) w0.
 A = sim.prepare_transmutation_matrix()
-
-n0 = np.transpose(np.array(w0))
+w0_matrix = [np.float64('0.0') for i in range(len(isotopes))]
+for key in w0.keys():
+    w0_matrix[isotopes.index(key)] = np.float64(w0[key])
+n0 = np.transpose(np.array(w0_matrix))
 n_final_cram = cram.order48(A,n0,total_time)
 
 # Prints the output of PyNUCTRAN solver and CRAM48, as well as their relative error.
-print('%21s---%21s---%21s' % ('-'*21,'-'*21,'-'*21))
-print('%21s   %21s   %21s' % ('Calculated','Reference (CRAM)', 'Rel. Error'))
-print('%21s---%21s---%21s' % ('-'*21,'-'*21,'-'*21))
+print('%-5s   %-5s   %-21s   %-21s   %-21s' % ('ID', 'Name','Calculated','Reference (CRAM)', 'Rel. Error'))
 for i in range(len(isotopes)):
-    print('%+20.14e\t%+20.14e\t%+20.14e' % (n_final[i],n_final_cram[i],\
-            (float(n_final[i])-n_final_cram[i])/n_final_cram[i]))
+    if n_final[i] > 1E-15:
+        print('%i\t%s\t%+20.14e\t%+20.14e\t%+20.14e' % (i, isotopes[i],n_final[i],n_final_cram[i],\
+                ((n_final[i])-n_final_cram[i])/n_final_cram[i]))
