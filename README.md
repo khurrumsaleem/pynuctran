@@ -68,7 +68,7 @@ Here, R is a set of transmutation events that mutate species k into species i. N
 \
 <img src="https://latex.codecogs.com/svg.latex?\mathbf{w}(t)&space;=&space;\mathbf{A}^{t/\Delta&space;t}&space;\mathbf{w}(0)" title="w(t) = \mathbf{A}^{t/\Delta t} w(0)" />
 
-It is important to remark that the matrix power in the above equation can be evaluated efficiently using the binary decomposition method via SciPy sparse matrix package, ```scipy.sparse.csr_matrix.__pow__()```.
+It is important to remark that the matrix power in the above equation can be evaluated efficiently using SciPy sparse matrix package, ```scipy.sparse.csr_matrix.__pow__()```.
 
 ## Derivation of π-distribution
 
