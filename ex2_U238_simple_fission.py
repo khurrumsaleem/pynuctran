@@ -12,9 +12,11 @@
   Time step = 1E+5 seconds.
   
 """
-
-from pynuctran.solver import *
 import numpy as np
+from pynuctran.cram import * 
+from pynuctran.depletion_scheme import *
+from pynuctran.solver import *
+from pynuctran.sparse import *
 
 isotopes = [
     'U238',
@@ -64,8 +66,8 @@ w0 = {
   'U238': 1E+12
 }
 
-total_time = 1E5
-n_final = sim.solve(w0, total_time)
+total_time = 1E3
+n_final = sim.solve(w0, total_time, int(1E20))
 
 
 #------------------ OBTAINING REFERENCE SOLUTION [CRAM48]----------------------------
@@ -88,6 +90,6 @@ n_final_cram = cram.order48(A,n0,total_time)
 # Prints the output of PyNUCTRAN solver and CRAM48, as well as their relative error.
 print('%-5s   %-5s   %-21s   %-21s   %-21s' % ('ID', 'Name','Calculated','Reference (CRAM)', 'Rel. Error'))
 for i in range(len(isotopes)):
-    if n_final[i] > 1E-15:
-        print('%i\t%s\t%+20.14e\t%+20.14e\t%+20.14e' % (i, isotopes[i],n_final[i],n_final_cram[i],\
-                ((n_final[i])-n_final_cram[i])/n_final_cram[i]))
+    if n_final[isotopes[i]] > 1E-15:
+        print('%i\t%s\t%+20.14e\t%+20.14e\t%+20.14e' % (i, isotopes[i],n_final[isotopes[i]],n_final_cram[i],\
+                (float(n_final[isotopes[i]])-n_final_cram[i])/n_final_cram[i]))
