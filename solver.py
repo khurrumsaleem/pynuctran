@@ -176,10 +176,8 @@ class solver:
         Update-1: Of course, understanding the math of preparing the transfer matrix
         is relatively easy and straightforward. Unfortunately, the matrix preparation
         requires high presicion calculation. Even a small binary operation float error
-        will affect the accuracy of pi-distribution. Therefore, I preserved high
-        presicion calculation for the calculation of pi-distribution. Once the distri-
-        bution is computed, it is converted into np.longfloat and the transfer matrix
-        is saved using the Compressed Sparse Row (CSR) format.
+        will affect the accuracy of pi-distribution. Thus, all calculations are evaluated
+        using the decimal class.
         
     '''
    
