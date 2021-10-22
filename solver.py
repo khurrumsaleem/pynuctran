@@ -12,7 +12,7 @@ License: MIT
 
 Initially developed, designed  and  proposed  by M. R. Omar for the purpose of 
 simulating various nuclear transmutations such as decays,  fissions as well as 
-neutron  absorptions.  PYNUCTRAN was  initially  developed to avoid cumbersome 
+neutron  absorptions.  PYNUCTRAN was developed to avoid cumbersome 
 numerical issues of solving the nuclide depletion equations.
 
 This code does not directly solve  Bateman's  equations.  Instead, it uses the 
@@ -120,7 +120,9 @@ class solver:
             # First we check if the fission yield size is the same with the 
             # number of products.
             if len(fission_yields) >= len(products):
-                # Update the fission yield table.
+
+                # Update the fission yield table. It must be in Decimal, since it will be used
+                # by PyNUCTRAN. 
                 self.fission_yields[i] = \
                     [dc.Decimal('%g' % y) for y in fission_yields]
 
@@ -181,7 +183,7 @@ class solver:
         
     '''
    
-    def prepare_transfer_matrix(self, dt: float, consolidate: bool = False) -> np.ndarray:
+    def prepare_transfer_matrix(self, dt: np.float64, consolidate: bool = False) -> smatrix:
         __zero__ = dc.Decimal('0.0')
         __one__ =   dc.Decimal('1.0')
         __negone__ = dc.Decimal('-1.0')
@@ -244,39 +246,44 @@ class solver:
         
         solve(n0, t, steps) returns the species concentrations after t seconds. n0 is the
         initial species concentrations. t is to total time step. substeps is the total
-        number of substeps.
+        number of substeps. consolidate=True removes all short-lived species from the trans-
+        fer matrix.
 
     '''
-
-    def solve(self, w0: dict, t: np.float64, substeps: int = 9999999999, consolidate: bool = False) -> np.ndarray:
+    def solve(self, w0: dict, t: np.float64, substeps: int = 9999999999, consolidate: bool = False) -> dict:
+        # Prepare the sparse version of w0 column matrix.
         w0_matrix = [[dc.Decimal('0.0')] for i in range(self.__I__)]
         for i in range(self.__I__):
             if self.species_names[i] in w0.keys():
                 w0_matrix[i][0] = dc.Decimal.from_float(w0[self.species_names[i]])
-            
         converted_w = smatrix.fromlist(w0_matrix)
 
+        # Converts all necessary parameters into decimal.
         t_long = dc.Decimal.from_float(t)
         dt = t_long / dc.Decimal.from_float(substeps)
 
+        # Prepare the transfer matrix.
         t0 = tm.process_time()
         A = self.prepare_transfer_matrix(dt, consolidate)
         t1 = tm.process_time()
         print('Done building transfer matrix. Size = %s CPU time = %f secs.' % (A.shape, t1-t0))
 
+        # Compute the matrix power.
         t0 = tm.process_time()
         An = A**(substeps)
         t1 = tm.process_time()
         print('Done computing sparse matrix power. CPU time = %f secs.' % (t1-t0))
 
+        # Sparse multiplication of w(t) = A^n * w(0).
         t0 = tm.process_time()
-        n = An * converted_w
+        w = An * converted_w
         t1 = tm.process_time()
         print('Done computing concentrations. CPU time = %f secs.' % (t1-t0))
 
+        # Convert sparse matrix n into a python dictionary.
         output = {}
         for i in range(self.__I__):
-            output[self.species_names[i]] = n.data.get((i,0), solver.__zero__)
+            output[self.species_names[i]] = w.data.get((i,0), solver.__zero__)
         
         return output
 

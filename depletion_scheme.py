@@ -2,16 +2,17 @@ import numpy as np
 import decimal as dc
 import xml.etree.ElementTree as ET
 import time as tm
+
 from pynuctran.solver import *
         
 '''
     SECTION III: DEPLETION DATA PRE-PROCESSING ................................................ SEC. III
     
     *******************************************************************************************
-    THIS SECTION ENABLES THE RETRIEVAL OF NUCLIDES DATA FROM ENDF.
-    THE NUCLIDE DATA ARE STORED IN chain_endfb71.xml. 
+    THIS SECTION ENABLES THE RETRIEVAL OF ENDFB71 NUCLIDES DATA FROM XML STORAGE.
+    THE NUCLIDE DATA ARE STORED IN chain_endfb71.xml, an XML file created by MIT-CPRG.
     
-    The XML file can be retrieved here:
+    The original source of the XML file can be retrieved here:
     https://github.com/mit-crpg/opendeplete/blob/master/chains/chain_endfb71.xml
     *******************************************************************************************
 '''
@@ -35,7 +36,7 @@ class depletion_scheme:
 
     '''
     @staticmethod
-    def build_chains(solver: solver, rxn_rates, xml_data_location: str = 'chain_endfb71.xml'):
+    def build_chains(solver: solver, rxn_rates: dict, xml_data_location: str = 'chain_endfb71.xml'):
         t0 = tm.process_time()
 
         species_names = solver.species_names
@@ -47,7 +48,7 @@ class depletion_scheme:
             if not species_name in species_names:
                 continue
             if 'half_life' in species.attrib:
-                decay_rate = np.log(2) / float(species.attrib['half_life'])
+                decay_rate = np.log(2) / np.float64(species.attrib['half_life'])
             else:
                 decay_rate = 0.0
             
@@ -55,7 +56,7 @@ class depletion_scheme:
 
             for removal in removals:
                 if removal.tag == 'decay_type':
-                    decay_rate_adjusted = float(removal.attrib['branching_ratio']) * decay_rate
+                    decay_rate_adjusted = np.float64(removal.attrib['branching_ratio']) * decay_rate
                     parent = species_name
                     daughter  = removal.attrib['target']
                     parent_id = species_names.index(parent)
@@ -94,7 +95,7 @@ class depletion_scheme:
                             if 'fission' in rxn_rates[parent].keys():
                                 for data in yield_data:
                                     if data.tag == 'energies':
-                                        energy = sorted([float(e) for e in data.text.split()])[0]
+                                        energy = sorted([np.float64(e) for e in data.text.split()])[0]
                                     if data.tag == 'fission_yields':
                                         if float(data.attrib['energy']) == energy:
                                             for param in list(data):
