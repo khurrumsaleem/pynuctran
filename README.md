@@ -68,7 +68,7 @@ Here, R is a set of transmutation events that mutate species k into species i. N
 \
 <img src="https://latex.codecogs.com/svg.latex?\mathbf{w}(t)&space;=&space;\mathbf{A}^{t/\Delta&space;t}&space;\mathbf{w}(0)" title="w(t) = \mathbf{A}^{t/\Delta t} w(0)" />
 
-It is important to remark that the matrix power in the above equation can be evaluated efficiently using SciPy sparse matrix package, ```scipy.sparse.csr_matrix.__pow__()```.
+It is important to remark that the matrix power in the above equation can be evaluated at an incredible speed using the binary decomposition method, see https://en.wikipedia.org/wiki/Exponentiation_by_squaring. Also, the transfer matrix A is a sparse matrix and most of its elements are zero. The ```scipy.sparse``` class could be used to cater sparse matrix multiplication and power, however, the class lacks arithmetic precisions. Thus, a special sparse matrix data structure is programmed in ```pynuctran.sparse.smatrix``` class, for PyNUCTRAN's specific use where the high-precision matrix elements are represented using the Python's ```decimal``` class, see https://docs.python.org/3/library/decimal.html. The matrix power is also handled using ```pynuctran.sparse.smatrix.__pow__(...)``` method.
 
 ## Derivation of π-distribution
 
@@ -142,6 +142,8 @@ pip install pynuctran
 _Importing PYNUCTRAN library to your Python code._
 ```python
 from pynuctran.solver import *
+from pynuctran.sparse import *
+from pynuctran.depletion_scheme import *
 ```
 
 _Running the simulation._
@@ -169,7 +171,7 @@ sim.add_removal(species_index=3, rate=np.log(2)/6.7659494310E+13, products=[-1])
 
 # Assign the initial weight of all isotopes. The length of w0 is equal to the number of isotopes being monitored.
 w0 = {
-  'U235': = 1.0
+  'U235': 1.0
 }
 
 # Evaluate the final species concentrations.
@@ -194,8 +196,17 @@ Initializes the solver. ```species_names``` is a list of species names involved 
 #### ``` solver.add_removal(species_index: int, rate: float, products: list)```
 Defines and adds a new removal process. ```isotope_id``` is the integer ID of the species subjected to the removal (the parent species). The ID corresponds to the index of ```species_names``` and  the species name is given by ```solver.species_names[species_id]```. ```rate``` is the rate of removal in /sec. For instance, ```rate``` is the decay constant of a decay process. ```products``` is a list of integers that corresponds to the IDs of the daughter species. If the product is not known or not monitored, you must set ```products=[-1]```.
 #### ``` solver.solve(w0: dict, t: float, substeps: int) -> numpy.ndarray```
-Runs the simulation. ```w0``` is the initial species concentrations, ```t``` is the time-step and ```steps``` is the total number of substeps. The length of ```w0``` must equals to the total number of species defined via ```solver.add_removal(...)```. Returns a column matrix representing the species concentrations w after time <i>t</i>.
-#### ``` build_chains(solver: solver, rxn_rates, xml_data_location: str = 'chain_endfb71.xml') ```
+Runs the simulation. ```w0``` is a python dictionary specifying the initial species concentrations, ```t``` is the time-step and ```steps``` is the total number of substeps. For instance, one can define the initial species concentrations as follows:
+  
+  ```
+      w0 = {
+          'U238' : 1E+0,
+          'Th232': 1E-3
+      }
+  ```
+This method returns a python dictionary containing the species concentrations w of all species after time <i>t</i>.
+  
+#### ``` build_chains(solver: solver, rxn_rates: dict, xml_data_location: str = 'chain_endfb71.xml') ```
 Instead of using ```solver.add_removal(...)``` to manually build the depletion chains, users are able to create the chains automatically using the prescribed XML nuclides data file. The XML file is the ```chain_endfb71.xml```, which is included in this package. solver is the solver class object used for the problem, and rxn_rates is a 2D python dictionary storing the event rates of various removal events. The keys of rxn_rates are ordered according to ```rxn_rates['species_name']['reaction_name']```. If necessary, users are required to build the dictionary manually. The species_name must derived from the species_names defined in the solver object. The accepted reaction names key are ```'fission'```,```'(n,a)'```,```'(n,p)'```,```'(n,gamma)'```,```'(n,2n)'```,```'(n,3n)'``` and ```'(n,4n)'```. For example:
   
  ```
