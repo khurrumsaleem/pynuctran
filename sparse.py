@@ -4,7 +4,7 @@ info = \
 '''
     This class was initially developed to accomodate fast, high-precision sparse
     matrix multiplications and powers. WARNING! This class does not covers all
-    matrix operations, it only cover the basic operations used by PyNUCTRAN, i.e.
+    matrix operations, only basic operations used by PyNUCTRAN are covered, i.e.
     Multiplication and Powers.
     This class uses the basic Python dictionaries to store data. Sparse matrix
     elements are accessed at an incredible speed via the use of hash table.
