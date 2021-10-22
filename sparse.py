@@ -19,7 +19,7 @@ info = \
     SPARSE MULTIPLICATION. Consider sparse matrices A and B. We want to evaluate A*B.
     Firstly, the cartesian products (more or less like a possible combinations) of 
     A.common_column and B.common_row are evaluated for all common index, x. The product
-    of these elements are evaluated, and the value of A[i][x] x B[x][j] will contributes
+    of these elements are evaluated, and the value of A[i][x] * B[x][j] will contributes
     to AB[i][j]. For example,
 
     AB[i][j] = A[i][1]*B[1][j] + A[i][2]*B[2][j] + A[i][3]*B[3][j] + ... 
@@ -30,7 +30,7 @@ info = \
     SPARSE POWER. Suppose we want to evaluate the power of a sparse matrix, i.e. A^n.
     Let n be a large integer number. A naive method is given by,
 
-    A^n = A x A x A x .... (n times)
+    A^n = A * A * A * .... (n times)
 
     Fortunately, this process can be accelerated using the binary decomposition method,
     for instance,
