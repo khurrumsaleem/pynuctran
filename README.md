@@ -30,7 +30,7 @@ If you don't prefer dealing with complicated mathematical methods to solve Batem
 ## Summary of the Method
 
 <div align="justify">
-A transmutation process involves the removal of a nuclide from a system. Then it leads to the creation of another daughter nuclide. For instance, the decay of U-238 into Th-234 involves removing U-238 from the system via alpha decay, which in fact mutating the U-238 nucleus into Th-234. In reality, such a transmutation process occur at a certain rate, Λ. PyNUCTRAN works by first accumulating the removal parameters from the user. The removal parameters include the rate, parent isotope and the daughter isotope(s). Practically, any number of removals can be added to PyNUCTRAN. Next, PyNUCTRAN prepares the removal probability (RP) table that stores the probability of various transmutation processes to occur. The RP-table boosts the computational speed by substantially reducing flops since the probabilities are pre-calculated before the simulation.
+A transmutation process involves the removal of a nuclide from a system. Then it leads to the creation of another daughter nuclide. For instance, the decay of U-238 into Th-234 involves removing U-238 from the system via alpha decay, which in fact mutating the U-238 nucleus into Th-234. In reality, such a transmutation process occur at a certain rate, Λ. PyNUCTRAN works by first accumulating the removal parameters from the user. The removal parameters include the rate, parent isotope and the daughter isotope(s). Practically, any number of removals can be added to PyNUCTRAN. Next, PyNUCTRAN prepares the transfer matrix, <b>A</b>, that stores the probabilities of various transmutations from one species to another.
 </br></br>
 </div>
 
@@ -66,7 +66,7 @@ Here, R is a set of transmutation events that mutate species k into species i. N
 </div>
 
 \
-<img src="https://latex.codecogs.com/svg.latex?\mathbf{w}(t)&space;=&space;\mathbf{A}^{t/\Delta&space;t}&space;\mathbf{w}(0)" title="w(t) = \mathbf{A}^{t/\Delta t} w(0)" />
+<a href="https://www.codecogs.com/eqnedit.php?latex=\mathbf{w}(t)=\mathbf{A}^{t/\Delta&space;t}\mathbf{w}(0)&space;\quad&space;\textrm{where}&space;\quad&space;t/\Delta&space;t&space;\in&space;\mathbb{N}" target="_blank"><img src="https://latex.codecogs.com/svg.latex?\mathbf{w}(t)=\mathbf{A}^{t/\Delta&space;t}\mathbf{w}(0)&space;\quad&space;\textrm{where}&space;\quad&space;t/\Delta&space;t&space;\in&space;\mathbb{N}" title="\mathbf{w}(t)=\mathbf{A}^{t/\Delta t}\mathbf{w}(0) \quad \textrm{where} \quad t/\Delta t \in \mathbb{N}" /></a>
 
 It is important to remark that the matrix power in the above equation can be evaluated at an incredible speed using the binary decomposition method, see https://cp-algorithms.com/algebra/binary-exp.html. Also, the transfer matrix A is a sparse matrix and most of its elements are zero. The ```scipy.sparse``` class could be used to cater sparse matrix multiplication and power, however, the class lacks arithmetic precisions. Thus, a special sparse matrix data structure is programmed in ```pynuctran.sparse.smatrix``` class, for PyNUCTRAN's specific use where the high-precision matrix elements are represented using the Python's ```decimal``` class, see https://docs.python.org/3/library/decimal.html. The matrix power is also handled using ```pynuctran.sparse.smatrix.__pow__(...)``` method.
 
