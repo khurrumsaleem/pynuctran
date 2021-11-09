@@ -1,8 +1,11 @@
 import decimal as dc
 from collections import defaultdict
-from itertools import product
-
-
+import time as tm
+import psutil
+from functools import lru_cache, partial
+from multiprocessing.pool import ThreadPool as Pool
+import matplotlib.pyplot as plt
+import numpy as np
 '''
     This class was initially developed to accomodate fast, high-precision sparse
     matrix multiplications and powers. WARNING! This class does not covers all
@@ -17,19 +20,12 @@ from itertools import product
     specialized class handling sparse matrix power to preserve the accuracy.
 
     SPARSE STORAGE. Only the non-zero elements are stored in smatrix.data dictio-
-    nary. The keys of smatrix.data are the tuple specifying the position of the
-    non-zero elements in the dense matrix version. smatrix.common_column (cc) and 
-    smatrix.common_rows (cr) are dictionaries that stores the collection (also a dict.)
-    of position tuples with common column or row indices, respectively. The keys are
-    the common column/row indices.
+    nary. A modified compressed sparse row format is used. Here, rowptr is not used,
+    instead, the non-zero values are kept in a 2D dictionary.
 
     SPARSE MULTIPLICATION. Consider sparse matrices A and B. We want to evaluate A*B.
-    Firstly, the cartesian products (more or less like a possible combinations) of 
-    A.common_column and B.common_row are evaluated for all common index, x. The product
-    of these elements are evaluated, and the value of A[i][x] x B[x][j] will contributes
-    to AB[i][j]. For example,
-
-    AB[i][j] = A[i][1]*B[1][j] + A[i][2]*B[2][j] + A[i][3]*B[3][j] + ... 
+    Here we implement the row-wise multiplication algorithm. Each row can be vectorized
+    into multiple concurrent threads.
 
     For a more comprehensive understanding, consider reading the code below. Good luck!
 
@@ -53,17 +49,25 @@ from itertools import product
 
     Prepared by M.R.Omar, 22/10/2021.
 '''
+# Evaluates the cartesian product of self.common_columns and other.common_rows.
+
+def row_operation(irow, sd, od, rd):
+    rdr, sdd = rd[irow], sd[irow]
+    for icol in sdd:
+        odd, x = od[icol], sdd[icol]
+        for ocol in odd:
+            rdr[ocol] += x * odd[ocol]
+
 class smatrix:
     __one__ = dc.Decimal('1.0')
     __zero__ = dc.Decimal('0.0')
-
+    __pool_obj__ = Pool(len(psutil.Process().cpu_affinity()))
     def __init__(self, shape: tuple):
 
-        self.shape = shape
-        self.data = defaultdict(lambda: smatrix.__zero__)
-        self.common_column = defaultdict(defaultdict)
-        self.common_row = defaultdict(defaultdict)
 
+        self.shape = shape
+        self.data = defaultdict(lambda: defaultdict(lambda: dc.Decimal('0.0')))
+        
         return
 
     # Initializes smatrix from a python list.
@@ -73,51 +77,34 @@ class smatrix:
 
         for i in range(result.shape[0]):
             for j in range(result.shape[1]):
-                if not A[i][j] == smatrix.__zero__:
-                    #result.addelement(i, j, A[i][j])
-                    result.common_column[j][(i,j)] = None
-                    result.common_row[i][(i,j)] = None
-                    result.data[(i,j)] = A[i][j]
+                a = A[i][j]
+                if a != smatrix.__zero__:
+                    result.data[i][j] = a
+
         return result
+
 
     # Overrides the multiplication operator for class smatrix.
     # This method defines the sprase matrix multiplication.
+
     def __mul__(self, other: 'smatrix'):
-        s = self
-        result = smatrix(shape=(s.shape[0], s.shape[1]))
-        scc, ocr, rcc, rcr, sd, od, rd = self.common_column, other.common_row, \
-                                    result.common_column, result.common_row, \
-                                    self.data, other.data, result.data
+        sx = self.shape[0]
+        sy = other.shape[1]
+        result = smatrix(shape=(sx, sy))
+        sd, od, rd = self.data, other.data, result.data
 
-        for j in scc:
-            # Prepare the cartesian product of L1 an L2
-            #comb = [(xA, xB) for xA in scc[j] for xB in ocr[j]]
-            comb = product(scc[j], ocr[j])
 
-            for x in comb:
-                rd[(x[0][0],x[1][1])] += sd[x[0]] * od[x[1]]
-
-        for x in rd:
-            rcc[x[1]][x], rcr[x[0]][x] = None, None
-
+        #ncpu = len(psutil.Process().cpu_affinity())
+        
+        smatrix.__pool_obj__.map(partial(row_operation, rd=rd, sd=sd, od=od), range(sx))
         return result
 
     # Overrides the matrix power operator **. Implements 
     # the binary decomposition method for matrix power.
-    def __pow__(self, power: int) -> 'smatrix':
-        c = self
-        n = c.shape[0]
-        result = smatrix((n,n))
-        # Prepare identity matrix.
-        for x in range(n):
-            i, j = x, x
-            result.common_column[j][(i,j)] = None
-            result.common_row[i][(i,j)] = None
-            result.data[(i,j)] += smatrix.__one__
-
-        while power > 0:
-            if power & 1:
-                result = result * c
-            c = c * c
-            power >>= 1
-        return result
+    @lru_cache(maxsize = 200)
+    def bpow(self, bit: int):
+        result = self
+        if (bit == 0):
+            return result
+        result = self.bpow(bit - 1)
+        return result * result
