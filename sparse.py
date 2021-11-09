@@ -8,7 +8,7 @@ from multiprocessing.pool import ThreadPool as Pool
 '''
     This class was initially developed to accomodate fast, high-precision sparse
     matrix multiplications and powers. WARNING! This class does not covers all
-    matrix operations, it only cover the basic operations used by PyNUCTRAN, i.e.
+    matrix operations, it only covers the basic operations used by PyNUCTRAN, i.e.
     Multiplication and Powers.
    
     This class uses the basic Python dictionaries to store data. Sparse matrix
