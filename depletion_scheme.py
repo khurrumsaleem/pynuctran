@@ -42,13 +42,18 @@ class depletion_scheme:
         species_names = solver.species_names
         tree = ET.parse(xml_data_location)
         root = tree.getroot()
-
+        max_rate = 0.0
         for species in root:
             species_name = species.attrib['name']
             if not species_name in species_names:
                 continue
+
             if 'half_life' in species.attrib:
-                decay_rate = np.log(2) / np.float64(species.attrib['half_life'])
+                hl = np.float64(species.attrib['half_life'])
+                decay_rate = np.log(2) / hl
+                # Records the maximum rate.
+                if decay_rate > max_rate:
+                    max_rate = decay_rate
             else:
                 decay_rate = 0.0
             
@@ -63,9 +68,14 @@ class depletion_scheme:
                     if daughter in species_names:
                         daughter_id = species_names.index(daughter)
                         solver.add_removal(parent_id, decay_rate_adjusted, [daughter_id])
+                        # Records the maximum rate.
+                        if decay_rate_adjusted > max_rate:
+                            max_rate = decay_rate_adjusted
                     else:
                         solver.add_removal(parent_id, decay_rate_adjusted, [solver.__no_product__])
-                
+                        # Records the maximum rate.
+                        if decay_rate_adjusted > max_rate:
+                            max_rate = decay_rate_adjusted
                 # If reaction rates are not provided then we skip this.
                 if not rxn_rates is None:
                     if species_name in rxn_rates.keys():
@@ -83,7 +93,6 @@ class depletion_scheme:
                                     solver.add_removal(parent_id, removal_rate, [daughter_id])
                                 else:
                                     solver.add_removal(parent_id, removal_rate, [solver.__no_product__])
-
                         # Process fission reaction.
                         if removal.tag == 'neutron_fission_yields':
                             parent = species_name
@@ -113,7 +122,6 @@ class depletion_scheme:
                                         yields_to_add.append(yields[products.index(product)])
                                 parent_id = species_names.index(species_name)
                                 solver.add_removal(parent_id, total_fission_rate, daughters_id_to_add, yields_to_add)
-  
                                
         # Report the data processing time.
         t1 = tm.process_time()
@@ -134,11 +142,12 @@ class depletion_scheme:
         return species_names
 
     @staticmethod
-    def get_all_species_names_range(xml_data_location: str, AMin: int, AMax: int) -> list:
+    def get_names(xml_data_location: str, AMin: int = -1, AMax: int = -1):
         tree = ET.parse(xml_data_location)
         root = tree.getroot()
-        
+
         species_names = []
+             
         for species in root:
             name = species.attrib['name']
             name = name.split('_')[0]
@@ -146,7 +155,11 @@ class depletion_scheme:
             for c in name:
                 if c.isnumeric():
                     x += c
-            A = int(x)
-            if A >= AMin and A <= AMax:
-                species_names.append(name)
-        return species_names        
+            if AMin == AMax == -1:
+                species_names.append(species.attrib['name'])  
+            else:
+                A = int(x)
+                if A >= AMin and A <= AMax:
+                    species_names.append(name)
+                    
+        return species_names  
