@@ -15,7 +15,7 @@ from multiprocessing.pool import ThreadPool as Pool
     elements are accessed at an incredible speed via the use of hash table.
 
     Of course, the existing SCIPY library can be used, however, it does not allow
-    dtype=Decimal, and this is frustrating. Therefore, I must endure writing a new
+    dtype=Decimal, and this is frustrating. Therefore, we must endure writing a new
     specialized class handling sparse matrix power to preserve the accuracy.
 
     SPARSE STORAGE. Only the non-zero elements are stored in smatrix.data dictio-
@@ -24,7 +24,12 @@ from multiprocessing.pool import ThreadPool as Pool
 
     SPARSE MULTIPLICATION. Consider sparse matrices A and B. We want to evaluate A*B.
     Here we implement the row-wise multiplication algorithm. Each row can be vectorized
-    into multiple concurrent threads.
+    into multiple concurrent threads. This sparse multiplication technique is originated
+    from Gustafson (1978): 
+    
+    Fred G. Gustavson. 1978. Two Fast Algorithms for Sparse Matrices: Multiplication and
+    Permuted Transposition. ACM Trans. Math. Softw. 4, 3 (Sept. 1978), 250–269. 
+    DOI:https://doi.org/10.1145/355791.355796
 
     For a more comprehensive understanding, consider reading the code below. Good luck!
 
