@@ -86,6 +86,7 @@ class solver:
         self.P             = [ []    for i in range(self.__I__)]
         self.A             = [ [0.0 for i in range(self.__I__)] for i in range(self.__I__) ]
         self.fission_yields = [ []    for i in range(self.__I__)]
+        self.max_rate = 0.0
 
     # *************************************************************************
     # add_removal(...) Adds a removal event to the solver.
@@ -109,7 +110,15 @@ class solver:
                           rate         : float, 
                           products     : list = [-1],
                           fission_yields: list = None):
-        d_rate = dc.Decimal('%g' % rate)
+        # records the maximum rate so that we can estimate the power of transfer
+        # matrix.
+        if rate > self.max_rate:
+            self.max_rate = rate
+            print(self.max_rate, self.species_names[species_index])
+        if isinstance(rate, float) or isinstance(rate, int):
+            d_rate = dc.Decimal.from_float(rate)
+        else:
+            d_rate = rate
         i = species_index
         self.lambdas[i].append(d_rate)
         self.G[i]      .append(products)
@@ -176,20 +185,21 @@ class solver:
         Update-1: Of course, understanding the math of preparing the transfer matrix
         is relatively easy and straightforward. Unfortunately, the matrix preparation
         requires high presicion calculation. Even a small binary operation float error
-        will affect the accuracy of pi-distribution. Thus, all calculations are evaluated
-        using the decimal class.
+        will affect the accuracy of pi-distribution. Therefore, I preserved high
+        presicion calculation for the calculation of pi-distribution. Once the distri-
+        bution is computed, it is converted into np.longfloat and the transfer matrix
+        is saved using the Compressed Sparse Row (CSR) format.
         
     '''
    
-    def prepare_transfer_matrix(self, dt: np.float64, consolidate: bool = False) -> smatrix:
+    def prepare_transfer_matrix(self, dt: float, consolidate: bool = False) -> smatrix:
         __zero__ = dc.Decimal('0.0')
         __one__ =   dc.Decimal('1.0')
         __negone__ = dc.Decimal('-1.0')
         sl_positions = []
         # Initialize the sparse matrix.
         A = [ [__zero__ for _ in range(self.__I__)] for _ in range(self.__I__)]
-        long_dt = dc.Decimal('%.15g' % dt)
-
+        long_dt = dt
         for i in range(self.__I__):
 
             n_events = len(self.G[i])
@@ -207,6 +217,7 @@ class solver:
 
             if norm == __zero__:
                 continue
+
             # Construct the sparse transfer matrix.
             for j in range(n_events):
                 self.P[i][j] = self.P[i][j] / norm
@@ -226,6 +237,7 @@ class solver:
                 # Add a removal event.
                 if j == 0:
                     A[i][i] += self.P[i][j]
+
         if not consolidate:
             return smatrix.fromlist(A)
 
@@ -248,7 +260,9 @@ class solver:
         fer matrix.
 
     '''
-    def solve(self, w0: dict, t: np.float64, substeps: int = 9999999999, consolidate: bool = False) -> dict:
+    def solve(self, w0: dict, t: np.float64, bit: int = -1, consolidate: bool = False) -> dict:
+
+
         # Prepare the sparse version of w0 column matrix.
         w0_matrix = [[dc.Decimal('0.0')] for i in range(self.__I__)]
         for i in range(self.__I__):
@@ -258,7 +272,17 @@ class solver:
 
         # Converts all necessary parameters into decimal.
         t_long = dc.Decimal.from_float(t)
-        dt = t_long / dc.Decimal.from_float(substeps)
+
+        # Prepare the bit number.
+        if bit == -1:
+            if self.max_rate != 0.0:    
+                bit = int((t_long * dc.Decimal.from_float(self.max_rate)).ln() / dc.Decimal('2.0').ln())
+            else:
+                print('Fatal error: The maximum transmutation rate is not known. Please supply the exponent bit, i.e. 2^bit.')
+                exit()
+        
+        dt = t_long / dc.Decimal.from_float(2**bit)
+        print('The substeps interval was automatically set to dt=%.12g (bit=2**%i).' % (dt, bit))
 
         # Prepare the transfer matrix.
         t0 = tm.process_time()
@@ -268,7 +292,7 @@ class solver:
 
         # Compute the matrix power.
         t0 = tm.process_time()
-        An = A**(substeps)
+        An = A.bpow(bit)
         t1 = tm.process_time()
         print('Done computing sparse matrix power. CPU time = %f secs.' % (t1-t0))
 
@@ -281,7 +305,8 @@ class solver:
         # Convert sparse matrix n into a python dictionary.
         output = {}
         for i in range(self.__I__):
-            output[self.species_names[i]] = w.data.get((i,0), solver.__zero__)
+            output[self.species_names[i]] = w.data[i][0]
         
+
         return output
 
