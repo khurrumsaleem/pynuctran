@@ -67,7 +67,7 @@ w0 = {
 }
 
 total_time = 1E3
-n_final = sim.solve(w0, total_time, int(1E20))
+n_final = sim.solve(w0, total_time)
 
 
 #------------------ OBTAINING REFERENCE SOLUTION [CRAM48]----------------------------
