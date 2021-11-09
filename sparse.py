@@ -4,8 +4,7 @@ import time as tm
 import psutil
 from functools import lru_cache, partial
 from multiprocessing.pool import ThreadPool as Pool
-import matplotlib.pyplot as plt
-import numpy as np
+
 '''
     This class was initially developed to accomodate fast, high-precision sparse
     matrix multiplications and powers. WARNING! This class does not covers all
