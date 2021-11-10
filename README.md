@@ -195,7 +195,7 @@ Before reading this section, you must have the basic idea of object-oriented pro
 Initializes the solver. ```species_names``` is a list of species names involved in the simulation. A species ID corresponds to the index of ```species_names```.  
 #### ``` solver.add_removal(species_index: int, rate: float, products: list)```
 Defines and adds a new removal process. ```isotope_id``` is the integer ID of the species subjected to the removal (the parent species). The ID corresponds to the index of ```species_names``` and  the species name is given by ```solver.species_names[species_id]```. ```rate``` is the rate of removal in /sec. For instance, ```rate``` is the decay constant of a decay process. ```products``` is a list of integers that corresponds to the IDs of the daughter species. If the product is not known or not monitored, you must set ```products=[-1]```.
-#### ``` solver.solve(w0: dict, t: float, substeps: int) -> numpy.ndarray```
+#### ``` solver.solve(w0: dict, t: float, substeps: int) -> dict```
 Runs the simulation. ```w0``` is a python dictionary specifying the initial species concentrations, ```t``` is the time-step and ```steps``` is the total number of substeps. For instance, one can define the initial species concentrations as follows:
   
   ```
@@ -206,7 +206,7 @@ Runs the simulation. ```w0``` is a python dictionary specifying the initial spec
   ```
 This method returns a python dictionary containing the species concentrations w of all species after time <i>t</i>.
   
-#### ``` build_chains(solver: solver, rxn_rates: dict, xml_data_location: str = 'chain_endfb71.xml') ```
+#### ``` depletion_scheme.build_chains(solver: solver, rxn_rates: dict, xml_data_location: str = 'chain_endfb71.xml') ```
 Instead of using ```solver.add_removal(...)``` to manually build the depletion chains, users are able to create the chains automatically using the prescribed XML nuclides data file. The XML file is the ```chain_endfb71.xml```, which is included in this package. solver is the solver class object used for the problem, and rxn_rates is a 2D python dictionary storing the event rates of various removal events. The keys of rxn_rates are ordered according to ```rxn_rates['species_name']['reaction_name']```. If necessary, users are required to build the dictionary manually. The species_name must derived from the species_names defined in the solver object. The accepted reaction names key are ```'fission'```,```'(n,a)'```,```'(n,p)'```,```'(n,gamma)'```,```'(n,2n)'```,```'(n,3n)'``` and ```'(n,4n)'```. For example:
   
  ```
