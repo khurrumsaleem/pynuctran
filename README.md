@@ -16,7 +16,7 @@ PyNUCTRAN is a Python library created to simulate various nuclear transmutations
 <img src="https://latex.codecogs.com/svg.image?\inline&space;\Lambda_{ij}" title="\inline \Lambda_{ij}" /> is the production rate of isotope-*i* due to the removal of isotope-*k* from the system (per second).
 
 <div align="justify">
-To date, there are many numerical depletion solvers available such as CRAM, TTM etc. Unfortunately, these methods are complicated and require sophisticated mathematical methods. It is also possible to simulates the actual transmutation processes using Monte Carlo method via iterations over a massive amount of nuclides. Alas, the simulation speed increases with increasing accuracy, which makes it not practical. Thanks to the variance reduction technique in Monte Carlo method, the concept of isotope weight is adopted. Here, the isotope weights can be adjusted and scaled using event probabilities, π, which will be described later. The method is easy to understand, and it can be used by physicists from various mathematical background.
+It is also possible to simulate the actual transmutation processes using Monte Carlo method via iterations over a massive amount of nuclides. Alas, the simulation speed increases with increasing accuracy, which makes it not practical. Thanks to the variance reduction technique in Monte Carlo method, the concept of isotope weight is adopted. Here, the isotope weights can be adjusted and scaled using event probabilities, π, which will be described later. The method is easy to understand, and it can be used by physicists from various mathematical background.
 </div>
 
 ## Features
