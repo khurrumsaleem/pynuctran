@@ -17,29 +17,36 @@ using namespace pugi;
 namespace cnuctran {
 
 
-    const mpreal __two__ = mpreal("2.0");
-    const mpreal __one__ = mpreal("1.0");
-    const mpreal __neg__ = mpreal("-1.0");
-    const mpreal __zer__ = mpreal("0.0");
-    const mpreal __eps__ = mpreal("1e-30");
+   
+    const mpreal __two__ = mpreal("2.0", digits2bits(500));
+    const mpreal __one__ = mpreal("1.0", digits2bits(500));
+    const mpreal __neg__ = mpreal("-1.0", digits2bits(500));
+    const mpreal __zer__ = mpreal("0.0", digits2bits(500));
+    const mpreal __eps__ = mpreal("1e-30", digits2bits(500));
     bool verbosity = true;
     const int    __nop__ = -1;
+
+    map<int, mpreal>* rdr;
+    map<int, mpreal>* sdd;
+    map<int, mpreal>* odd;
 
     void row_operation(int& irow,
         map<int, map<int, mpreal>>& sd,
         map<int, map<int, mpreal>>& od,
         map<int, map<int, mpreal>>& rd)
     {
-        map<int, mpreal>* rdr = &rd[irow];
-        map<int, mpreal>* sdd = &sd[irow];
+        rdr = &rd[irow];
+        sdd = &sd[irow];
 
         for (map<int, mpreal>::iterator it1 = sdd->begin(); it1 != sdd->end(); it1++) {
             int icol = it1->first;
-            map<int, mpreal>* odd = &od[icol];
+            odd = &od[icol];
             mpreal x = (*sdd)[icol];
             for (map<int, mpreal>::iterator it2 = odd->begin(); it2 != odd->end(); it2++) {
                 int ocol = it2->first;
                 (*rdr)[ocol] += x * (*odd)[ocol];
+                if ((*rdr)[ocol] < __eps__)
+                    (*rdr)[ocol] = __zer__;
             }
         }
 
@@ -109,7 +116,7 @@ namespace cnuctran {
             return s.str();
         }
 
-        smatrix multiply(smatrix& other)
+        smatrix mul(smatrix& other)
         {
             int sx = this->shape.first;
             int sy = other.shape.second;
@@ -128,31 +135,52 @@ namespace cnuctran {
         smatrix operator *(smatrix other)
         {
             smatrix r = smatrix(other.shape);
-            r = this->multiply(other);
+            r = this->mul(other);
             return r;
         }
 
         smatrix pow(mpz_t n)
         {
 
-            smatrix result = this->copy();
+            mpz_t zer; mpz_init(zer); mpz_set_ui(zer, 0);
             mpz_t one; mpz_init(one); mpz_set_ui(one, 1);
-            mpz_t two; mpz_init(two); mpz_set_ui(two, 1);
+            mpz_t two; mpz_init(two); mpz_set_ui(two, 2);
+            mpz_t modulo; mpz_init(modulo);
 
-            if (mpz_cmp(n, one) == 0)
-                return result;
+            if (mpz_cmp(n, one) <= 0) 
+            {
+                cout << "fatal-error <cnuctran::smatrix::pow()> Matrix exponent is less than one!" << endl;
+                exit(1);
+            }
 
-            mpz_t int_div; mpz_init(int_div); mpz_fdiv_q(int_div, n, two);
-            result = result.pow(int_div);
+            
+            smatrix r = smatrix(this->shape);
+            smatrix y = this->copy();
+            bool start_flag = true;
+            while (mpz_cmp(n, one) > 0)
+            {
+                mpz_mod(modulo, n, two);
+                if (mpz_cmp(modulo, zer) != 0)
+                {
+                    if (start_flag == true) 
+                    {
+                        start_flag = false;
+                        r = y;
+                    }
+                    else
+                        r = r * y;
+                }
 
-            mpz_t mod_res; mpz_init(mod_res); mpz_mod(mod_res, n, two);
-            if (mod_res)
-                return result * result * *this;
+                mpz_fdiv_q(n, n, two);
+                y = y * y;
+            }
+            if (start_flag)
+                r = y;
             else
-                return result * result;
+                r = r * y;
+            return r;   
 
         }
-
 
     };
 
@@ -173,7 +201,8 @@ namespace cnuctran {
             for (int i = 0; i < this->__I__; i++)
             {
                 this->lambdas.push_back(vector<mpreal>());
-                this->G.push_back(vector<vector<int>>({ {__nop__} }));
+                vector<int> tmp1 = { __nop__ }; vector<vector<int>> tmp2; tmp2.push_back(tmp1);
+                this->G.push_back(tmp2);
                 this->P.push_back(vector<mpreal>());
                 this->fission_yields.push_back(vector<mpreal>());
             }
@@ -186,20 +215,21 @@ namespace cnuctran {
             vector<mpreal> fission_yields = vector<mpreal>({}))
         {
 
-            cout << "define removal: parent = " << this->species_names[species_index];
-            cout << "\tindex = " << species_index;
-            cout << "\trate = " << rate;
-            cout << "\tproducts = ";
+           /*
+            cout << "<define removal> parent = " << this->species_names[species_index];
+            cout << " index = " << species_index;
+            cout << " rate = " << rate;
+            cout << " products = ";
 
 
             int i = 0;
             for (int p : products)
             {
                 if (p != __nop__)
-                    cout << "[" << p << "]\t" << this->species_names[p];
+                    cout << "[" << p << "] " << this->species_names[p];
                 else
                 {
-                    cout << "[" << p << "]\tnot-tracked";
+                    cout << "[" << p << "] not-tracked";
                     continue;
                 }
 
@@ -208,7 +238,13 @@ namespace cnuctran {
                 else
                     cout << "\t";
             }
-            cout << endl;
+            cout << endl;                
+           
+           */
+       
+            
+            
+
 
 
             if (rate < __eps__)
@@ -254,7 +290,7 @@ namespace cnuctran {
 
         smatrix prepare_transfer_matrix(mpreal dt)
         {
-            vector<vector<mpreal>> A = vector<vector<mpreal>>();
+            vector<vector<mpreal>> A;
             for (int i = 0; i < this->__I__; i++)
             {
                 vector<mpreal> tmp = vector<mpreal>();
@@ -266,19 +302,20 @@ namespace cnuctran {
             for (int i = 0; i < this->__I__; i++)
             {
                 int n_events = this->G[i].size();
+
                 mpreal norm = __zer__;
 
                 // Compute the probability of removals...
                 vector<mpreal> E = vector<mpreal>();
                 for (int l = 1; l < n_events; l++)
                     E.push_back(exp(-this->lambdas[i][l - 1] * dt));
-
+               
                 for (int j = 0; j < n_events; j++)
                 {
                     this->P[i].push_back(__one__);
                     for (int l = 1; l < n_events; l++)
                     {
-                        mpreal kron = mpreal(to_string((int)(l == i)).c_str());
+                        mpreal kron = mpreal(to_string((int)(l == j)).c_str());
                         this->P[i][j] *= (kron + pow(__neg__, kron) * E[l - 1]);
                     }
                     norm += this->P[i][j];
@@ -313,6 +350,8 @@ namespace cnuctran {
                             if (A[k][i] < __eps__)
                                 A[k][i] == __zer__;
 
+
+
                         }
                     }
 
@@ -325,10 +364,10 @@ namespace cnuctran {
         }
 
         map<string, mpreal> solve(map<string, mpreal> w0,
-            mpreal t,
+            mpreal dt,
             mpz_t substeps)
         {
-            vector<vector<mpreal>> w0_matrix = vector<vector<mpreal>>();
+            vector<vector<mpreal>> w0_matrix;
             for (int i = 0; i < this->__I__; i++)
                 w0_matrix.push_back(vector<mpreal>({ __zer__ }));
             for (int i = 0; i < this->__I__; i++)
@@ -336,13 +375,12 @@ namespace cnuctran {
                     w0_matrix[i][0] = w0[this->species_names[i]];
             smatrix converted_w0 = smatrix(w0_matrix);
 
-            mpreal dt = t / substeps;
+            cout << "The substep interval was set to " << dt << " secs. " << endl;
             smatrix A = this->prepare_transfer_matrix(dt);
             cout << "Done building transfer matrix. Size = (" << A.shape.first << ", " << A.shape.second << ")" << endl;
-
             smatrix An = A.pow(substeps);
             cout << "Done computing sparse matrix power." << endl;
-
+            //cout << A.to_string(100) << endl;
             smatrix w = An * converted_w0;
             cout << "Done computing concentrations." << endl;
 
@@ -384,10 +422,9 @@ namespace cnuctran {
 
                 mpreal decay_rate;
                 if (species.attribute("half_life"))
-                    decay_rate = log(__two__) / mpreal(species.attribute("half_life").value());
+                    decay_rate = mpfr::log(__two__) / mpreal(species.attribute("half_life").value());
                 else
                     decay_rate = __zer__;
-
 
                 for (xml_node removal : species.children())
                 {
@@ -452,7 +489,7 @@ namespace cnuctran {
                                     {
                                         if (string(data.name()) == "energies")
                                         {
-                                            stringstream ss(data.value()); string token;
+                                            stringstream ss(data.child_value()); string token;
                                             vector<string> energies;
                                             while (getline(ss, token, ' '))
                                                 if (token != "")
@@ -468,8 +505,7 @@ namespace cnuctran {
                                                 {
                                                     if (string(param.name()) == "products")
                                                     {
-                                                        stringstream ss(param.value()); string token;
-                                                        vector<string> products;
+                                                        stringstream ss(param.child_value()); string token;
                                                         while (getline(ss, token, ' '))
                                                             if (token != "")
                                                                 products.push_back(token);
@@ -477,35 +513,35 @@ namespace cnuctran {
 
                                                     if (string(param.name()) == "data")
                                                     {
-                                                        stringstream ss(param.value()); string token;
+                                                        stringstream ss(param.child_value()); string token;
                                                         while (getline(ss, token, ' '))
-                                                            yields.push_back(mpreal(token));
+                                                            if (token != "")
+                                                                yields.push_back(mpreal(token));
                                                     }
-
-
 
                                                 }
 
                                                 mpreal total_fission_rate = rxn_rates[parent]["fission"];
                                                 vector<mpreal> yields_to_add;
                                                 vector<int> daughters_id_to_add;
-
+                                                vector<string>::iterator it_product;
                                                 for (string product : products)
                                                 {
-                                                    vector<string>::iterator it_product;
-                                                    it_product = std::find(species_names.begin(), species_names.end(), product);
+                                                    
+                                                    it_product = find(species_names.begin(), species_names.end(), product);
                                                     if (it_product != species_names.end())
                                                     {
                                                         int product_id = distance(species_names.begin(), it_product);
                                                         daughters_id_to_add.push_back(product_id);
-                                                        it_product = std::find(products.begin(), products.end(), product);
+                                                        it_product = find(products.begin(), products.end(), product);
                                                         product_id = distance(products.begin(), it_product);
                                                         yields_to_add.push_back(yields[product_id]);
                                                     }
-                                                    it_parent = std::find(species_names.begin(), species_names.end(), parent);
-                                                    parent_id = distance(products.begin(), it_parent);
-                                                    s.add_removal(parent_id, total_fission_rate, daughters_id_to_add, yields_to_add);
                                                 }
+                                                it_parent = find(species_names.begin(), species_names.end(), parent);
+                                                parent_id = distance(species_names.begin(), it_parent);
+                                                
+                                                s.add_removal(parent_id, total_fission_rate, daughters_id_to_add, yields_to_add);
                                             }
                                         }
                                     }
@@ -556,18 +592,127 @@ namespace cnuctran {
             }
             return species_names;
         }
+
+        static void simulate_from_input(string xml_input)
+        {
+            xml_document input_file;
+            xml_parse_result open_success = input_file.load_file(xml_input.c_str());
+            if (!open_success) {
+                cout << "FATAL-ERROR <cnuctran::depletion_scheme::read_input(...)> An error has occurred while reading the XML input file." << endl;
+                exit(1);
+            }
+            xml_node root = input_file.child("problem");
+
+
+
+            // Read simulation parameters.
+            mpreal dt;
+            mpz_t substeps;
+            int precision_digits = 400;
+            int output_digits = 15;
+
+
+            precision_digits = stoi(root.child("simulation_params").child("precision_digits").child_value());
+            cout << "input<simulation_params> precision_digits = " << precision_digits << endl;
+
+            output_digits = stoi(root.child("simulation_params").child("output_digits").child_value());
+            cout << "input<simulation_params> output_digits = " << output_digits << endl;
+
+            // Set the precision...
+            mpreal::set_default_prec(digits2bits(precision_digits));
+            cout.precision(output_digits);
+
+            // Set dt and substeps...
+            dt = mpreal(root.child("simulation_params").child("dt").child_value());
+            cout << "input<simulation_params> dt = " << dt << endl;
+
+            mpz_init(substeps);
+            mpz_set_str(substeps, root.child("simulation_params").child("substeps").child_value(), 10);
+            //substeps = mpreal(root.child("simulation_params").child("substeps").child_value());
+            cout << "input<simulation_params> substeps = " << substeps << endl;
+
+            //Read the nuclides.
+            vector<string> species_names;
+            string species = root.child("species").child_value();
+            if (strlen(root.child("species").attribute("AMin").value()) > 0) {
+                xml_document source;
+                xml_parse_result open_success = source.load_file(root.child("species").attribute("source").value());
+                if (open_success)
+                {
+                    int AMin = -1;
+                    int AMax = -1;
+                    if (strlen(root.child("species").attribute("AMin").value()) > 0) {
+                        AMin = stoi(root.child("species").attribute("AMin").value());
+                    }
+                    if (strlen(root.child("species").attribute("AMax").value()) > 0) {
+                        AMax = stoi(root.child("species").attribute("AMax").value());
+                    }
+                    species_names = depletion_scheme::get_nuclide_names(root.child("species").attribute("source").value(), AMin, AMax);
+                    cout << "Done loading species names, A = [" << AMin << "," << AMax << "]" << endl;
+                }
+                else
+                {
+                    cout << "fatal-error <cnuctran::depletion_scheme::simulate_from_input(...)> Cannot open source file." << endl;
+                    exit(1);
+                }
+            }
+            else
+            {
+                stringstream ss = stringstream(species); string token;
+                while (getline(ss, token, ' '))
+                {
+                    if (token != "")
+                        species_names.push_back(token);
+                }
+                cout << "Done loading species names." << endl;
+            }
+            
+
+            //Read the initial concentration.
+            map<string, mpreal> w0;
+            for (xml_node item : root.child("initial_concentration").children())
+            {
+                mpreal concentration = mpreal(item.child_value());
+                w0[item.attribute("species").value()] = concentration;
+                cout << "input<initial_concentration> species = " << item.attribute("species").value() << " w0 = " << concentration << endl;
+            }
+        
+
+            //Read the rxn rates.
+            map<string, map<string, mpreal>> rxn_rates;
+
+            for (xml_node reaction : root.child("reaction_rates").children())
+            {
+                mpreal rate = mpreal(reaction.child_value());
+                rxn_rates[reaction.attribute("species").value()][reaction.attribute("type").value()] = rate;
+                cout << "input<rxn_rates> species = " << reaction.attribute("species").value() << " type = " << reaction.attribute("type").value() << " rate = " << rate << endl;
+            }
+
+
+
+            solver sol = solver(species_names);
+            depletion_scheme::build_chains(sol, rxn_rates, root.child("species").attribute("source").value());
+            map<string, mpreal> w = sol.solve(w0, dt, substeps);
+
+            for (string species : sol.species_names)
+            {
+                mpreal c = w[species];
+                if (c > __eps__)
+                    cout << species << "\t" << w[species] << endl;
+            }
+            
+        }
     };
 }
 
 int main()
 {
     using namespace cnuctran;
-    mpreal::set_default_prec(digits2bits(600));
-    cout.precision(10);
 
-    solver sol = solver(depletion_scheme::get_nuclide_names("E:\\chain_endfb71.xml", 200,300));
-    map<string, map<string, mpreal>> rxn_rates;
-    depletion_scheme::build_chains(sol, rxn_rates, "E:\\chain_endfb71.xml");
+    depletion_scheme::simulate_from_input("E:\\input.xml");
+
+    exit(0);
+    
 
 
 }
