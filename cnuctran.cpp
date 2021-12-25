@@ -116,42 +116,19 @@ namespace cnuctran {
         rdr = &rd[irow];
         sdd = &sd[irow];
 
-        for (unordered_map<int, mpreal>::iterator it1 = sdd->begin(); it1 != sdd->end(); it1++) {
+        for (unordered_map<int, mpreal>::iterator it1 = sdd->begin(); it1 != sdd->end(); it1++) 
+        {
             int icol = it1->first;
             odd = &od[icol];
             mpreal x = (*sdd)[icol];
-            for (unordered_map<int, mpreal>::iterator it2 = odd->begin(); it2 != odd->end(); it2++) {
+            for (unordered_map<int, mpreal>::iterator it2 = odd->begin(); it2 != odd->end(); it2++) 
+            {
                 int ocol = it2->first;
                 (*rdr)[ocol] += x * (*odd)[ocol];
             }
         }
+        
     }
-
-    /*void row_operation_chunk(int istart, int istop,
-        unordered_map<int, unordered_map<int, mpreal>>& sd,
-        unordered_map<int, unordered_map<int, mpreal>>& od,
-        unordered_map<int, unordered_map<int, mpreal>>& rd)
-    {
-
-        for (int irow = istart; irow <= istop; irow++)
-        {
-            rdr = &rd[irow];
-            sdd = &sd[irow];
-
-            for (unordered_map<int, mpreal>::iterator it1 = sdd->begin(); it1 != sdd->end(); it1++) {
-                int icol = it1->first;
-                odd = &od[icol];
-                mpreal x = (*sdd)[icol];
-                for (unordered_map<int, mpreal>::iterator it2 = odd->begin(); it2 != odd->end(); it2++) {
-                    int ocol = it2->first;
-
-                    (*rdr)[ocol] += x * (*odd)[ocol];
-
-                }
-            }
-        }
-
-    }*/
 
     class smatrix {
 
@@ -229,36 +206,11 @@ namespace cnuctran {
                 row_operation(row, *sd, *od, *rd);
 
             }
-
-            //vector<thread> thread_pool;
-            //int thread_length = sx / __npr__;
-            //for (int ithread = 0; ithread < __npr__; ithread++)
-            //{
-            //    int istart = ithread * thread_length;
-            //    int istop = istart + thread_length - 1;
-
-            //    if (ithread != (__npr__ - 1))
-            //    {
-            //        thread thread_instance(row_operation_chunk, (istart), (istop), ref(*sd), ref(*od), ref(*rd));
-            //        thread_instance.join();
-            //        
-            //    }
-            //    else
-            //    {
-            //        istop = sx - 1;
-            //        thread thread_instance(row_operation_chunk, (istart), (istop), ref(*sd), ref(*od), ref(*rd));
-            //        thread_instance.join();
-            //        
-            //    }
-
-            //
-            //}
-
-
-
+            
             return result;
         }
 
+        
         smatrix operator *(smatrix other)
         {
             smatrix r = smatrix(other.shape);
