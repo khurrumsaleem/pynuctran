@@ -1,9 +1,3 @@
-// cnuctran.cpp : This file contains all necessary routines and functions that enables the
-//                calculation of final nuclide concentrations after depletion processes. 
-//                Program execution begins and ends there.
-//                This code is prepared by M. R. Omar, Universiti Sains Malaysia.
-//
-
 #include <iostream>
 #include <iomanip>
 #include <mpfr.h>
@@ -102,33 +96,7 @@ namespace cnuctran {
             This algorithm has a complexity of O(log n).
 
     */
-    unordered_map<int, mpreal>* rdr;
-    unordered_map<int, mpreal>* sdd;
-    unordered_map<int, mpreal>* odd;
 
-    void row_operation(int& irow,
-        unordered_map<int, unordered_map<int, mpreal>>& sd,
-        unordered_map<int, unordered_map<int, mpreal>>& od,
-        unordered_map<int, unordered_map<int, mpreal>>& rd)
-    {
-
-
-        rdr = &rd[irow];
-        sdd = &sd[irow];
-
-        for (unordered_map<int, mpreal>::iterator it1 = sdd->begin(); it1 != sdd->end(); it1++) 
-        {
-            int icol = it1->first;
-            odd = &od[icol];
-            mpreal x = (*sdd)[icol];
-            for (unordered_map<int, mpreal>::iterator it2 = odd->begin(); it2 != odd->end(); it2++) 
-            {
-                int ocol = it2->first;
-                (*rdr)[ocol] += x * (*odd)[ocol];
-            }
-        }
-        
-    }
 
     class smatrix {
 
@@ -143,21 +111,11 @@ namespace cnuctran {
             return;
         }
 
-        smatrix(vector<vector<mpreal>>& A)
+        smatrix(pair<int, int> shape, unordered_map< int, unordered_map<int, mpreal>>& A)
         {
-            int nrows = A.size();
-            int ncols = A[0].size();
-            this->shape = pair<int, int>(nrows, ncols);
 
-            for (int i = 0; i < nrows; i++)
-            {
-                for (int j = 0; j < ncols; j++)
-                {
-                    mpreal a = A[i][j];
-                    if (a > __zer__)
-                        this->data[i][j] = a;
-                }
-            }
+            this->shape = shape;
+            this->data = A;
 
             return;
         }
@@ -169,48 +127,26 @@ namespace cnuctran {
             return r;
         }
 
-        string to_string(int digits = 6)
-        {
-            ostringstream s;
-            ostringstream tmp;
-            s.precision(digits);
-            for (int i = 0; i < this->shape.first; i++)
-            {
-                for (int j = 0; j < this->shape.second; j++)
-                {
-                    mpreal a = this->data[i][j];
-                    if (a > __eps__)
-                    {
-                        tmp.str("");
-                        tmp << "(" << i << ", " << j << ")";
-                        s << setw(12) << tmp.str() << "\t\t" << a << endl;
-                    }
-                }
-            }
-
-            return s.str();
-        }
-
-
-
         smatrix mul(smatrix& other)
         {
             int sx = this->shape.first;
             int sy = other.shape.second;
             smatrix result = smatrix(pair<int, int>(sx, sy));
-            unordered_map<int, unordered_map<int, mpreal>>* sd = &this->data;
-            unordered_map<int, unordered_map<int, mpreal>>* od = &other.data;
-            unordered_map<int, unordered_map<int, mpreal>>* rd = &result.data;
 
-            for (int row = 0; row < sx; row++) {
-                row_operation(row, *sd, *od, *rd);
-
+            int row;
+            for (row = 0; row < sx; row++) {
+                auto& a = result.data[row];
+                for (const auto& [k1, v1] : this->data[row])
+                {
+                    for (const auto& [k2, v2] : other.data[k1]) {
+                        a[k2] += v1 * v2;
+                    }
+                }
             }
-            
+        
             return result;
         }
 
-        
         smatrix operator *(smatrix other)
         {
             smatrix r = smatrix(other.shape);
@@ -270,7 +206,6 @@ namespace cnuctran {
         int __I__;
         vector<vector<mpreal>> lambdas;
         vector<vector<vector<int>>> G;
-        vector<vector<mpreal>> P;
         vector<vector<mpreal>> fission_yields;
 
         solver(vector<string> species_names)
@@ -282,7 +217,6 @@ namespace cnuctran {
                 this->lambdas.push_back(vector<mpreal>());
                 vector<int> tmp1 = { __nop__ }; vector<vector<int>> tmp2; tmp2.push_back(tmp1);
                 this->G.push_back(tmp2);
-                this->P.push_back(vector<mpreal>());
                 this->fission_yields.push_back(vector<mpreal>());
             }
             return;
@@ -320,13 +254,6 @@ namespace cnuctran {
                 }
                 cout << endl;
             }
-
-
-
-
-
-
-
 
 
             if (rate < __eps__)
@@ -372,95 +299,81 @@ namespace cnuctran {
 
         smatrix prepare_transfer_matrix(mpreal dt)
         {
-            vector<vector<mpreal>> A;
-            for (int i = 0; i < this->__I__; i++)
+            unordered_map<int, unordered_map<int, mpreal>> A;
+            unordered_map<int, unordered_map<int, mpreal>> P;
+            int i;
+          
+            unordered_map<int, mpreal> e;
+            for (i = 0; i < this->__I__; i++)
             {
-                vector<mpreal> tmp = vector<mpreal>();
-                for (int j = 0; j < this->__I__; j++)
-                    tmp.push_back(__zer__);
-                A.push_back(tmp);
-            }
+//..............Clears the exponentials container, e, and retrieves the total number of
+//              events associated to nuclide-i.
+                e.clear();
+                const int n_events = this->G[i].size();
 
-            for (int i = 0; i < this->__I__; i++)
-            {
-                int n_events = this->G[i].size();
 
+//..............Precalculate the exponentials.
                 mpreal norm = __zer__;
-
-                // Compute the probability of removals...
-                vector<mpreal> E = vector<mpreal>();
+                
                 for (int l = 1; l < n_events; l++)
-                    E.push_back(exp(-this->lambdas[i][l - 1] * dt));
+                    e[l-1] = (exp(-this->lambdas[i][l - 1] * dt));
 
+//..............Constructs the pi-distribution.
                 for (int j = 0; j < n_events; j++)
                 {
-                    this->P[i].push_back(__one__);
+                    
+                    auto *p = &P[i][j];
+                    *p = __one__;
                     for (int l = 1; l < n_events; l++)
                     {
-                        mpreal kron = mpreal(to_string((int)(l == j)).c_str());
-                        this->P[i][j] *= (kron + pow(__neg__, kron) * E[l - 1]);
+                        auto kron = mpreal(l == j);
+                        *p *= (kron + pow(__neg__, kron) * e[l - 1]);
                     }
-                    norm += this->P[i][j];
+                    norm += *p;
                 }
 
                 if (norm == __zer__)
                     continue;
 
+//..............Constructs the transfer matrix.
                 for (int j = 0; j < n_events; j++)
                 {
-                    this->P[i][j] /= norm;
+               
+                    auto a = (P[i][j] / norm);
                     int n_daughters = this->G[i][j].size();
                     for (int l = 0; l < n_daughters; l++)
                     {
-                        int k = this->G[i][j][l];
-                        mpreal a;
+                        auto k = this->G[i][j][l];
                         if (k != __nop__)
                         {
-                            if (n_daughters > 1)
-                            {
-                                a = this->P[i][j] * this->fission_yields[i][l];
-                                if (a > __eps__)
-                                    A[k][i] += a;
-                            }
-                            else
-                            {
-                                a = this->P[i][j];
-                                if (a > __eps__)
-                                    A[k][i] += a;
-                            }
-
-                            if (A[k][i] < __eps__)
-                                A[k][i] == __zer__;
-
-
-
+                            n_daughters > 1 ? A[k][i] += a * this->fission_yields[i][l] :
+                                A[k][i] += a;
                         }
                     }
 
-                    if (j == 0 && this->P[i][j] > __eps__)
-                        A[i][i] += this->P[i][j];
+                    if (j == 0) A[i][i] += a;
 
                 }
             }
-            return smatrix(A);
+
+
+            return smatrix(pair<int,int>(this->__I__, this->__I__), A);
         }
 
         map<string, mpreal> solve(map<string, mpreal> w0,
             mpreal dt,
             mpreal t)
         {
-            vector<vector<mpreal>> w0_matrix;
-            for (int i = 0; i < this->__I__; i++)
-                w0_matrix.push_back(vector<mpreal>({ __zer__ }));
+            unordered_map<int, unordered_map<int, mpreal>> w0_matrix;
             for (int i = 0; i < this->__I__; i++)
                 if (w0.count(this->species_names[i]) == 1)
                     w0_matrix[i][0] = w0[this->species_names[i]];
-            smatrix converted_w0 = smatrix(w0_matrix);
+            smatrix converted_w0 = smatrix(pair<int, int>(this->__I__, 1), w0_matrix);
             mpz_t substeps; mpz_set_str(substeps, floor(t / dt).toString().c_str(), 10);
             if (__vbs__) cout << "t = " << t << "\tdt = " << dt << "\tsubsteps = " << substeps << endl;
+
             auto t1 = chrono::high_resolution_clock::now();
             smatrix A = this->prepare_transfer_matrix(dt);
-            
             smatrix An = A.pow(substeps);
             smatrix w = An * converted_w0;
             auto t2 = chrono::high_resolution_clock::now();
