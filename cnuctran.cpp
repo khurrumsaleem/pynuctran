@@ -1,4 +1,7 @@
-// cnuctran.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// cnuctran.cpp : This file contains all necessary routines and functions that enables the
+//                calculation of final nuclide concentrations after depletion processes. 
+//                Program execution begins and ends there.
+//                This code is prepared by M. R. Omar, Universiti Sains Malaysia.
 //
 
 #include <iostream>
